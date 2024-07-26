@@ -1,5 +1,5 @@
 """Contains DB manager interface and its realizations."""
-from typing import Protocol, Any, TypeVar
+from typing import Protocol, Any, TypeVar, Type
 import asyncio
 from sqlalchemy import create_engine, text, Connection, Row
 from sqlalchemy.orm import sessionmaker, Session
@@ -20,7 +20,7 @@ class DBManager(Protocol[T_co]):
     """
 
     engine: Connection
-    session_local: sessionmaker[Session]
+    session_local: Session
 
     async def get_data(self) -> T_co:
         """
@@ -47,8 +47,8 @@ class KisDBManager:
        creating database sessions.
     """
 
-    engine: Connection = create_engine(settings.kis_db_url).connect()
-    session_local = sessionmaker(autoflush=False, bind=engine)
+    engine: Connection = create_engine(settings.kis_db_url, echo=True).connect()
+    session_local: Session = sessionmaker(autoflush=False, bind=engine)()
 
     async def get_data(self,
                        query_string: str = """SELECT * FROM mm.arrived LIMIT 1;"""
@@ -60,8 +60,7 @@ class KisDBManager:
          or None if no data is found.
         """
         query = text(query_string)
-        session = self.session_local()
-        cursor = session.execute(query)
+        cursor = self.session_local.execute(query)
         result = cursor.fetchone()
         return result
 

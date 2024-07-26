@@ -1,10 +1,12 @@
 fastapi==0.111.1
 pydantic_settings==2.3.4
 python-dotenv==1.0.1
-mypy==1.11.0
+mypy==1.9.0
 sqlalchemy==2.0.31
 pylint==3.2.5
 pydocstyle==6.3.0
 psycopg2-binary==2.9.9
 aiofiles==24.1.0
 types-aiofiles==24.1.0.20240626
+playwright==1.45.1
+beautifulsoup4==4.12.3

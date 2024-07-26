@@ -5,6 +5,7 @@ from pydantic import BaseModel
 from dotenv import load_dotenv
 # pylint: disable=E0401
 from settings import settings
+from sql_app.models import User, DeclarativeMeta
 
 load_dotenv()
 app = FastAPI()
