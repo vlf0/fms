@@ -5,10 +5,12 @@ from playwright.async_api import (
     async_playwright,
     Browser,
     BrowserContext,
-    Page
+    Page,
+    TimeoutError
 )
-from bs4 import Tag
-from fms.parser.soups import HHSoup, BaseSoup
+import asyncio
+from bs4 import Tag, BeautifulSoup
+from fms.parser import HHSoup, BaseSoup
 
 USER_AGENTS = (
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0',
@@ -68,24 +70,35 @@ class BaseParser(AbstractParser):
         page: Page = await context.new_page()
         return page
 
-    async def parse(self, content: str) -> list[Tag | None]:
-
+    async def parse(self, content: str) -> BaseSoup:
         soup_class: BaseSoup = self.soup_class(content, self.parser_type)
         tag = soup_class.get_tag(self.tag_name, attrs=self.tag_attrs)
-        parsed_data: list[Tag | None] = soup_class.parse_content(tag)
-        return parsed_data
+        soup_class.parse_content(tag)
+        return soup_class
 
-    async def start_browser(self) -> list[Tag | None]:
+    async def start_browser(self) -> BaseSoup:
+        max_retries = 3
+        retries = 0
         async with async_playwright() as pw:
-            browser: Browser = await pw.chromium.launch(headless=False)
+            browser: Browser = await pw.chromium.launch()
             async with browser:
                 page: Page = await self._create_page(browser)
                 async with page as p:
-                    await p.goto(self.url)
-                    await p.wait_for_load_state()
-                    content = await p.content()
-                    result: list[Tag | None] = await self.parse(content)
-                    return result
+                    while retries < max_retries:
+                        try:
+                            await p.goto(self.url)
+                            await p.wait_for_load_state()
+                            content = await p.content()
+                            soup_class: BaseSoup = await self.parse(content)
+                            # if len(soup_class.offers_list) != soup_class.offers_amount:
+                            #     # TODO: implement logic if offers amount not matched.
+                            #     pass
+                            return soup_class
+                        except TimeoutError as e:
+                            retries += 1
+                            print(f"Attempt {retries} failed: {e}. Retrying...")
+                            await asyncio.sleep(2 ** retries)  # exponential backoff
+                    raise TimeoutError("Max retries exceeded while trying to load the page")
 
 
 class HHParser(BaseParser):

@@ -9,4 +9,5 @@ CUSTOM_ROOT_DIR = DEFAULT_ROOT_DIR.parent
 if str(CUSTOM_ROOT_DIR) not in sys.path:
     sys.path.append(str(CUSTOM_ROOT_DIR))
 
-from .parsers import BaseParser, HHParser
+from .soups import BaseSoup, HHSoup
+from .parsers import BaseParser, HHParser, HH_URL

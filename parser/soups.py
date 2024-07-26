@@ -61,7 +61,7 @@ class AbstractSoup(ABC):
         """
 
     @abstractmethod
-    def parse_content(self, tag: Tag | NavigableString | None) -> list[Tag | None]:
+    def parse_content(self, tag: Tag | NavigableString | None) -> None:
         """
         Parse the content of the provided tag and extract information.
 
@@ -93,7 +93,7 @@ class BaseSoup(AbstractSoup):
             soup.find(name, attrs=attrs)) if attrs else soup.find(name)
         return tag
 
-    def parse_content(self, tag: Tag | NavigableString | None) -> list[Tag | None]:
+    def parse_content(self, tag: Tag | NavigableString | None) -> None:
         raise NotImplementedError("Subclasses should implement this method")
 
 
@@ -105,16 +105,29 @@ class HHSoup(BaseSoup):
     :param parser_type: str: The type of parser to be used by BeautifulSoup.
     """
 
-    def parse_content(self, tag: Tag | NavigableString | None) -> list[Tag | None]:
+    def __init__(self, content: str, parser_type: str):
+        super().__init__(content, parser_type)
+        self.offers_amount: int = 0
+        self.offers_links: list[str] | None = None
+        self.offers_list: str = ''
+
+    def parse_content(self, tag: Tag | NavigableString | None) -> None:
         if tag is None:
             raise TagNotFindError('The tag was not found. Can\'t process empty list.')
-        offers_amount_block: Tag | NavigableString | Any | None \
+        common_offers_block: Tag | NavigableString | Any | None \
             = tag.next.next.next  # type: ignore
-        offers_block: Tag | NavigableString | Any | None = (offers_amount_block  # type: ignore
+        self.offers_amount = int(common_offers_block.get_text().split()[0])  # type: ignore
+        offers_block: Tag | NavigableString | Any | None = (common_offers_block  # type: ignore
                                                             .next_sibling
                                                             .next_sibling.next.next_sibling
                                                             .next.next.next.next.next)
-        offers_list: list[Tag | None] = (offers_block  # type: ignore
-                                         .find_all('div',
-                                                   class_=re.compile('vacancy-card--z')))
-        return offers_list
+        offers = (offers_block.find_all(  # type: ignore
+            'div', class_=re.compile('vacancy-card--z')))
+        # TODO: implement linked list instead simple list
+
+        self.offers_list = '\n'.join(offer.get_text() for offer in offers)
+
+
+
+    
+
