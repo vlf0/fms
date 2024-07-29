@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """Initialization adding a pre-root path to system's paths."""
 import sys
 from pathlib import Path
@@ -13,4 +15,4 @@ if str(CUSTOM_ROOT_DIR) not in sys.path:
 from .database import DBManager, KisDBManager, main
 from .models import User
 
-__all__ = ["DBManager", "KisDBManager", "main", "User", "Profile"]
+__all__ = ["DBManager", "KisDBManager", "main", "User"]

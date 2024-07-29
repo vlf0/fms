@@ -31,6 +31,7 @@ HH_URL = ('https://hh.ru/search/vacancy?excluded_text=%D0%BF%D1%80%D0%B5%D0%BF%D
           '5&ored_clusters=true&schedule=remote&search_field=name&search_period=1&text=Python')
 
 
+# pylint: disable=R0903
 class AbstractParser(ABC):
     """ Abstract base class for parsers that handle web scraping. """
 
@@ -44,20 +45,26 @@ class AbstractParser(ABC):
         self.parser_type = 'html.parser'
 
     @abstractmethod
-    async def _create_page(self, browser: Browser) -> Page:
-        """ Creates a new page in the browser context. """
-
-    @abstractmethod
     async def start_browser(self) -> BaseSoup:
         """
         Starts the browser and returns the parsed content as
         a BaseSoup instance.
         """
 
+    @abstractmethod
+    async def _create_context(self, browser: Browser) -> BrowserContext:
+        """ Creates a new context in the one same browser. """
 
+    @abstractmethod
+    async def _create_page(self, context: BrowserContext) -> Page:
+        """ Creates a new page in the browser context. """
+
+
+# pylint: disable=R0903
 class BaseParser(AbstractParser):
     """ Base parser class for handling common parsing logic. """
 
+    # pylint: disable=R0913
     def __init__(self, url: str,
                  soup_class: type[BaseSoup] = BaseSoup,
                  tag_name: str = 'default',
@@ -81,10 +88,13 @@ class BaseParser(AbstractParser):
         self.tag_name: str = tag_name
         self.tag_attrs: dict[str, str] | None = tag_attrs
 
-    async def _create_page(self, browser: Browser) -> Page:
-        """ Creates a new page with a random user agent. """
+    async def _create_context(self, browser: Browser) -> BrowserContext:
         user_agent: str = random.choice(self.user_agents)
         context: BrowserContext = await browser.new_context(user_agent=user_agent)
+        return context
+
+    async def _create_page(self, context: BrowserContext) -> Page:
+        """ Creates a new page with a random user agent. """
         page: Page = await context.new_page()
         return page
 
@@ -101,8 +111,9 @@ class BaseParser(AbstractParser):
         retries = 0
         async with async_playwright() as pw:
             browser = await pw.chromium.launch()
+            context = await self._create_context(browser)
             async with browser:
-                page: Page = await self._create_page(browser)
+                page: Page = await self._create_page(context)
                 async with page as p:
                     while retries < max_retries:
                         try:
@@ -166,3 +177,37 @@ class HHParser(BaseParser):
         tag = soup_instance.get_tag(self.tag_name, attrs=self.tag_attrs)
         soup_instance.parse_content(tag)
         return soup_instance
+
+    async def parse_many(self) -> HHSoup:
+        """
+        Parses content from multiple offer links concurrently.
+        """
+        soup_instance = await self.parse()
+
+        async with async_playwright() as pw:
+            tasks = []
+            browser = await pw.chromium.launch(headless=False)
+            context = await self._create_context(browser)
+            async with browser:
+                assert isinstance(soup_instance.offers_links, list)
+                for link in soup_instance.offers_links:
+                    page = await self._create_page(context)
+                    tasks.append(self._parse_page(page, link))
+                await asyncio.gather(*tasks)
+        return soup_instance
+
+    async def _parse_page(self, page: Page, link: str) -> None:
+        """
+        Helper method to parse a single page and extract content.
+
+        :param page: Page object from Playwright.
+        :param link: URL to navigate to.
+        """
+        try:
+            await page.goto(link)
+            await page.wait_for_load_state('domcontentloaded')
+            content = await page.content()
+            soup_instance = self.soup_class(content, self.parser_type)
+            soup_instance.parse_descriptions(content)
+        finally:
+            await page.close()

@@ -132,6 +132,17 @@ class HHSoup(BaseSoup):
         self.split_parse_content()
 
     def split_parse_content(self) -> None:
+        """
+        Splits and parses the content of each job offer.
+
+        This method iterates over the list of job offers (`self.offers_list`),
+        extracting relevant details such as name, link, salary, experience,
+        remote status, and company. The parsed details are stored in
+        `self.parsed_offers`, and the offer links are stored in `self.offers_links`.
+
+        :raises AttributeError: If an attribute is not found during parsing.
+        :raises TypeError: If an unexpected type is encountered during parsing.
+        """
         for offer in self.offers_list:  # type: ignore
             start_point = offer.next
             name = start_point.next.find('span').text  # type: ignore
@@ -159,6 +170,15 @@ class HHSoup(BaseSoup):
                 self.offers_links.append(link)  # type: ignore
 
     def parse_descriptions(self, extra_content: str) -> None:
+        """
+        Parses job descriptions from additional content.
+
+        This method extracts and processes job descriptions from the
+        given `extra_content`. The descriptions are appended to
+        `self.descriptions`.
+
+        :param extra_content: str: The HTML content containing additional job details.
+        """
         self.descriptions = []
         text_block = self.get_tag('div', content=extra_content,
                                   attrs={'class': 'bloko-text bloko-text_large'})
@@ -166,4 +186,5 @@ class HHSoup(BaseSoup):
         description = (text_block.next.next.next.next_sibling  # type: ignore
                        .next_sibling.next_sibling.text)
         description_text = description.split('Задайте')[0]
+        print(description_text)
         self.descriptions.append(description)

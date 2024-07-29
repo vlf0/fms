@@ -23,7 +23,7 @@ class AsyncList:
         self.sequence: list[str] = sequence
         self.index: int = 0
 
-    def __aiter__(self) -> AsyncList:
+    def __aiter__(self) -> 'AsyncList':
         """
         Returns the asynchronous iterator object.
 

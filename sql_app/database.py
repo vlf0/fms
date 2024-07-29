@@ -1,5 +1,5 @@
 """Contains DB manager interface and its realizations."""
-from typing import Protocol, Any, TypeVar, Type
+from typing import Protocol, Any, TypeVar
 import asyncio
 from sqlalchemy import create_engine, text, Connection, Row
 from sqlalchemy.orm import sessionmaker, Session
