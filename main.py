@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """The `main` module of app, the entrypoint."""
 from typing import Annotated
 from fastapi import FastAPI, Depends
@@ -5,7 +7,6 @@ from pydantic import BaseModel
 from dotenv import load_dotenv
 # pylint: disable=E0401
 from settings import settings
-from sql_app.models import User, DeclarativeMeta
 
 load_dotenv()
 app = FastAPI()

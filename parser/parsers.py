@@ -1,16 +1,19 @@
-"""Description of parsers classes."""
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Contains parser classes for handling web scraping with Playwright
+and BeautifulSoup.
+"""
 import random
 from abc import ABC, abstractmethod
+import asyncio
 from playwright.async_api import (
     async_playwright,
     Browser,
     BrowserContext,
-    Page,
-    TimeoutError
+    Page
 )
-import asyncio
-from bs4 import Tag, BeautifulSoup
-from fms.parser import HHSoup, BaseSoup
+from .soups import HHSoup, BaseSoup
 
 USER_AGENTS = (
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0',
@@ -29,8 +32,12 @@ HH_URL = ('https://hh.ru/search/vacancy?excluded_text=%D0%BF%D1%80%D0%B5%D0%BF%D
 
 
 class AbstractParser(ABC):
+    """ Abstract base class for parsers that handle web scraping. """
 
     def __init__(self, url: str, user_agents: tuple[str, ...]) -> None:
+        """
+        Initializes the AbstractParser with a URL and user agents.
+        """
         super().__init__()
         self.url: str = url
         self.user_agents: tuple[str, ...] = user_agents
@@ -38,18 +45,18 @@ class AbstractParser(ABC):
 
     @abstractmethod
     async def _create_page(self, browser: Browser) -> Page:
-        pass
+        """ Creates a new page in the browser context. """
 
     @abstractmethod
-    async def parse(self, content: str) -> list[Tag | None]:
-        pass
-
-    @abstractmethod
-    async def start_browser(self) -> list[Tag | None]:
-        pass
+    async def start_browser(self) -> BaseSoup:
+        """
+        Starts the browser and returns the parsed content as
+        a BaseSoup instance.
+        """
 
 
 class BaseParser(AbstractParser):
+    """ Base parser class for handling common parsing logic. """
 
     def __init__(self, url: str,
                  soup_class: type[BaseSoup] = BaseSoup,
@@ -57,6 +64,16 @@ class BaseParser(AbstractParser):
                  tag_attrs: dict[str, str] | None = None,
                  user_agents: tuple[str, ...] = USER_AGENTS,
                  ) -> None:
+        """
+        Initializes the BaseParser with URL, soup class, tag name,
+         and attributes.
+
+        :param url: The URL to scrape.
+        :param soup_class: The class to use for creating soup objects.
+        :param tag_name: The tag name to search for in the HTML.
+        :param tag_attrs: The attributes of the tag to search for.
+        :param user_agents: A tuple of user agent strings.
+        """
         super().__init__(url, user_agents)
         self.url: str = url
         self.user_agents: tuple[str, ...] = user_agents
@@ -65,22 +82,25 @@ class BaseParser(AbstractParser):
         self.tag_attrs: dict[str, str] | None = tag_attrs
 
     async def _create_page(self, browser: Browser) -> Page:
+        """ Creates a new page with a random user agent. """
         user_agent: str = random.choice(self.user_agents)
         context: BrowserContext = await browser.new_context(user_agent=user_agent)
         page: Page = await context.new_page()
         return page
 
-    async def parse(self, content: str) -> BaseSoup:
-        soup_class: BaseSoup = self.soup_class(content, self.parser_type)
-        tag = soup_class.get_tag(self.tag_name, attrs=self.tag_attrs)
-        soup_class.parse_content(tag)
-        return soup_class
-
     async def start_browser(self) -> BaseSoup:
+        """
+        Starts the browser, navigates to the URL, and returns
+         the parsed content.
+
+        :return: An instance of BaseSoup containing the parsed content.
+        :raises TimeoutError: If the page fails to load
+         maximum retries.
+        """
         max_retries = 3
         retries = 0
         async with async_playwright() as pw:
-            browser: Browser = await pw.chromium.launch()
+            browser = await pw.chromium.launch()
             async with browser:
                 page: Page = await self._create_page(browser)
                 async with page as p:
@@ -89,11 +109,8 @@ class BaseParser(AbstractParser):
                             await p.goto(self.url)
                             await p.wait_for_load_state()
                             content = await p.content()
-                            soup_class: BaseSoup = await self.parse(content)
-                            # if len(soup_class.offers_list) != soup_class.offers_amount:
-                            #     # TODO: implement logic if offers amount not matched.
-                            #     pass
-                            return soup_class
+                            soup_instance = self.soup_class(content, self.parser_type)
+                            return soup_instance
                         except TimeoutError as e:
                             retries += 1
                             print(f"Attempt {retries} failed: {e}. Retrying...")
@@ -102,18 +119,50 @@ class BaseParser(AbstractParser):
 
 
 class HHParser(BaseParser):
+    """ Parser class for handling job listings from HH.ru. """
 
     def __init__(self,
                  url: str,
-                 soup_class: type[BaseSoup] = HHSoup,
+                 soup_class: type[HHSoup] = HHSoup,
                  tag_name: str = 'div',
                  tag_attrs: dict[str, str] | None = None
                  ) -> None:
+        """
+        Initializes the HHParser with URL, soup class, tag name,
+         and attributes.
+
+        :param url: The URL to scrape.
+        :param soup_class: The class to use for creating soup objects.
+        :param tag_name: The tag name to search for in the HTML.
+        :param tag_attrs: The attributes of the tag to search for.
+        """
         super().__init__(url, soup_class, tag_name, tag_attrs)
         self.url: str = url
-        self.soup_class = soup_class
+        self.soup_class: type[HHSoup] = soup_class
         self.tag_name = tag_name
         if tag_attrs is None:
             self.tag_attrs: dict[str, str] | None = {
                 'class': 'HH-MainContent HH-Supernova-MainContent'
             }
+
+    async def start_browser(self) -> HHSoup:
+        """
+        Starts the browser and ensures the returned soup
+         is of type HHSoup.
+
+        :return: An instance of HHSoup containing the parsed content.
+        """
+        soup_instance = await super().start_browser()
+        assert isinstance(soup_instance, HHSoup)
+        return soup_instance
+
+    async def parse(self) -> HHSoup:
+        """
+        Parses the content of the webpage for job listings.
+
+        :return: An instance of HHSoup with parsed job offers.
+        """
+        soup_instance: HHSoup = await self.start_browser()
+        tag = soup_instance.get_tag(self.tag_name, attrs=self.tag_attrs)
+        soup_instance.parse_content(tag)
+        return soup_instance

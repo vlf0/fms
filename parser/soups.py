@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """Description of classes related to `BeautifulSoup` management."""
 from typing import Any
 import re
@@ -15,10 +17,6 @@ class AbstractSoup(ABC):
     creating to constructor and create `BeautifulSoup` object
     using the same named method.
     We can pass any parser type for parsing processes.
-
-    :param content: str: The HTML content to be parsed.
-    :param parser_type: str: The type of parser to be used
-     by BeautifulSoup (e.g., 'html.parser').
     """
 
     def __init__(self, content: str, parser_type: str) -> None:
@@ -35,7 +33,7 @@ class AbstractSoup(ABC):
         self.parser_type: str = parser_type
 
     @abstractmethod
-    def create_soup(self) -> BeautifulSoup:
+    def create_soup(self, content: str) -> BeautifulSoup:
         """
         Create a BeautifulSoup object from the gotten content.
 
@@ -43,7 +41,8 @@ class AbstractSoup(ABC):
         """
 
     @abstractmethod
-    def get_tag(self, name: str, attrs: dict[str, str] | None = None,
+    def get_tag(self, name: str, content: str | None = None,
+                attrs: dict[str, str] | None = None,
                 recursive: bool = True, **kwargs: dict[str, Any]
                 ) -> Tag | NavigableString | None:
         """
@@ -51,6 +50,7 @@ class AbstractSoup(ABC):
         on the provided criteria.
 
         :param name: str: The name of the tag to find.
+        :param content: str: The content of the defined page to parsing.
         :param attrs: dict[str, str] | None: A dictionary of attributes
          to filter the tag.
         :param recursive: bool: Whether to search recursively.
@@ -81,14 +81,16 @@ class BaseSoup(AbstractSoup):
      by BeautifulSoup.
     """
 
-    def create_soup(self) -> BeautifulSoup:
-        soup: BeautifulSoup = self.beautiful_soup(self.content, self.parser_type)
+    def create_soup(self, content: str) -> BeautifulSoup:
+        soup: BeautifulSoup = self.beautiful_soup(content, self.parser_type)
         return soup
 
-    def get_tag(self, name: str, attrs: dict[str, str] | None = None,
+    def get_tag(self, name: str, content: str | None = None,
+                attrs: dict[str, str] | None = None,
                 recursive: bool = True, **kwargs: dict[str, Any]
                 ) -> Tag | NavigableString | None:
-        soup: BeautifulSoup = self.create_soup()
+        content = content if content is not None else self.content
+        soup: BeautifulSoup = self.create_soup(content)
         tag: Tag | NavigableString | None = (
             soup.find(name, attrs=attrs)) if attrs else soup.find(name)
         return tag
@@ -109,7 +111,9 @@ class HHSoup(BaseSoup):
         super().__init__(content, parser_type)
         self.offers_amount: int = 0
         self.offers_links: list[str] | None = None
-        self.offers_list: str = ''
+        self.offers_list: list[Tag] | None = None
+        self.parsed_offers: list[tuple[str, ...]] | None = None
+        self.descriptions: list[str] | None = None
 
     def parse_content(self, tag: Tag | NavigableString | None) -> None:
         if tag is None:
@@ -121,13 +125,45 @@ class HHSoup(BaseSoup):
                                                             .next_sibling
                                                             .next_sibling.next.next_sibling
                                                             .next.next.next.next.next)
-        offers = (offers_block.find_all(  # type: ignore
+        self.offers_list = (offers_block.find_all(  # type: ignore
             'div', class_=re.compile('vacancy-card--z')))
-        # TODO: implement linked list instead simple list
+        self.parsed_offers = []
+        self.offers_links = []
+        self.split_parse_content()
 
-        self.offers_list = '\n'.join(offer.get_text() for offer in offers)
+    def split_parse_content(self) -> None:
+        for offer in self.offers_list:  # type: ignore
+            start_point = offer.next
+            name = start_point.next.find('span').text  # type: ignore
+            link = start_point.next.find('a').attrs.get('href')  # type: ignore
+            second_point = start_point.next.next_sibling.next_sibling.next.next  # type: ignore
+            child_tag = second_point.next.name  # type: ignore
+            if child_tag == 'span':
+                salary: str = (second_point.next.text  # type: ignore
+                               .replace('\u202f', ' ')
+                               .replace('\xa0', ' '))
+                exp: str = (second_point.next.previous.next_sibling  # type: ignore
+                            .text.replace('\xa0', ' '))
+                remote: str = second_point.next_sibling.next_sibling.text  # type: ignore
+                company: str = (second_point.previous.previous.next_sibling  # type: ignore
+                                .next_sibling.find('span').text.replace('\xa0', ' '))
+                self.parsed_offers.append((name, salary, exp,  # type: ignore
+                                           remote, company, link))
+                self.offers_links.append(link)  # type: ignore
+            else:
+                exp: str = second_point.text.replace('\xa0', ' ')  # type: ignore
+                remote: str = second_point.next_sibling.text  # type: ignore
+                company: str = (second_point.previous.previous.next_sibling  # type: ignore
+                                .next_sibling.find('span').text.replace('\xa0', ' '))
+                self.parsed_offers.append((name, exp, remote, company, link))  # type: ignore
+                self.offers_links.append(link)  # type: ignore
 
+    def parse_descriptions(self, extra_content: str) -> None:
+        self.descriptions = []
+        text_block = self.get_tag('div', content=extra_content,
+                                  attrs={'class': 'bloko-text bloko-text_large'})
 
-
-    
-
+        description = (text_block.next.next.next.next_sibling  # type: ignore
+                       .next_sibling.next_sibling.text)
+        description_text = description.split('Задайте')[0]
+        self.descriptions.append(description)
