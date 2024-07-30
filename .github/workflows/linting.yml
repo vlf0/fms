@@ -1,0 +1,28 @@
+name: Linting and types checking
+on: [push, workflow_dispatch]
+jobs:
+  check-up:
+    runs-on: ubuntu-latest
+    environment: development
+    env:
+      KIS_DB_URL: ${{ secrets.KIS_DB_URL }}
+    steps:
+      - name: Get code from repository
+        uses: actions/checkout@v4
+      - name: Create .env file
+        run: |
+          GITHUB_ENV='.env'
+          echo 'KIS_DB_URL'=${{ env.KIS_DB_URL }} >> $GITHUB_ENV
+      - name: Install dependencies
+        run: |
+          python3 -m venv venv
+          source venv/bin/activate
+          pip3 install -r requirements.txt
+      - name: Types checking via MyPy
+        run: |
+          source venv/bin/activate
+          mypy . --explicit-package-bases
+      - name: Linting via Pylint
+        run: | 
+          source venv/bin/activate
+          pylint .
