@@ -186,7 +186,7 @@ class HHParser(BaseParser):
 
         async with async_playwright() as pw:
             tasks = []
-            browser = await pw.chromium.launch(headless=False)
+            browser = await pw.chromium.launch()
             context = await self._create_context(browser)
             async with browser:
                 assert isinstance(soup_instance.offers_links, list)

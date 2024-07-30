@@ -6,7 +6,7 @@ import re
 from abc import ABC, abstractmethod
 from bs4 import BeautifulSoup, Tag, NavigableString
 # pylint: disable=E0401
-from exceptions import TagNotFindError
+from fms.exceptions import TagNotFindError  # type: ignore
 
 
 class AbstractSoup(ABC):
