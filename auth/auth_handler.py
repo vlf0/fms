@@ -66,9 +66,9 @@ class AuthHandler:
         """
         to_encode = data.copy()
         if expires_delta:
-            expire = datetime.datetime.now(datetime.UTC) + expires_delta
+            expire = datetime.datetime.now(datetime.UTC) + expires_delta  # type: ignore
         else:
-            expire = (datetime.datetime.now(datetime.UTC)
+            expire = (datetime.datetime.now(datetime.UTC)  # type: ignore
                       + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
         to_encode.update({"iat": int(expire.timestamp())})
         encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)

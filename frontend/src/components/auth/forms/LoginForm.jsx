@@ -27,17 +27,6 @@ const LoginForm = ({ onSwitchForm }) => {
         throw new Error(errorData.detail || 'Registration failed');
       }
 
-      const result = await response.json();
-
-      const token = result.token;  // Get token from response
-      console.log(response)
-      console.log(result)
-      console.log(token)
-
-      const expires = new Date();
-      expires.setHours(expires.getHours() + 1);
-      document.cookie = `token=${token}; path=/; secure; samesite=strict`; // Set token into coockie
-
       setSuccess('Login successful!');
     } catch (error) {
       setError(error.message);

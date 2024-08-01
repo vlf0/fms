@@ -67,5 +67,10 @@ class UserAuthenticate:
             access_token = AuthHandler.create_access_token(
                 data={'sub': user.name}, expires_delta=access_token_expires
             )
-            return JSONResponse(status_code=status.HTTP_200_OK,
-                                content={'token': access_token})
+            response = JSONResponse(status_code=status.HTTP_200_OK,
+                                    content={'token': access_token})
+            response.set_cookie(key='token',
+                                value=access_token,
+                                expires=259200,
+                                httponly=True)
+            return response
