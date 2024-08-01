@@ -12,7 +12,6 @@ if str(CUSTOM_ROOT_DIR) not in sys.path:
     sys.path.append(str(CUSTOM_ROOT_DIR))
 
 # pylint: disable=C0413
-from .database import DBManager, KisDBManager, main
 from .models import User
 
-__all__ = ["DBManager", "KisDBManager", "main", "User"]
+__all__ = ['User']

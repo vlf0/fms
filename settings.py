@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     """A class to represent application settings."""
 
     kis_db_url: str = 'default'
+    jwt_secret_key: str = 'default'
 
     class Config:
         """Represent rows of variables from .env file."""

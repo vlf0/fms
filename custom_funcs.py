@@ -110,6 +110,8 @@ class ConfigFilesSorter:
 class RequirementsSorted(ConfigFilesSorter):
     """A class to sort dependencies in the requirements.txt file."""
 
+    allowed_extensions = {'txt'}
+
     def __init__(self, req_file: str = 'requirements.txt') -> None:
         """
         Instantiate `RequirementsSorted` class.

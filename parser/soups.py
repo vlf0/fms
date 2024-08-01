@@ -5,7 +5,6 @@ from typing import Any
 import re
 from abc import ABC, abstractmethod
 from bs4 import BeautifulSoup, Tag, NavigableString
-# pylint: disable=E0401
 from fms.exceptions import TagNotFindError  # type: ignore
 
 
