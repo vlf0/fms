@@ -117,15 +117,8 @@ class HHSoup(BaseSoup):
     def parse_content(self, tag: Tag | NavigableString | None) -> None:
         if tag is None:
             raise TagNotFindError('The tag was not found. Can\'t process empty list.')
-        common_offers_block: Tag | NavigableString | Any | None \
-            = tag.next.next.next  # type: ignore
-        self.offers_amount = int(common_offers_block.get_text().split()[0])  # type: ignore
-        offers_block: Tag | NavigableString | Any | None = (common_offers_block  # type: ignore
-                                                            .next_sibling
-                                                            .next_sibling.next.next_sibling
-                                                            .next.next.next.next.next)
-        self.offers_list = (offers_block.find_all(  # type: ignore
-            'div', class_=re.compile('vacancy-card--z')))
+        self.offers_list = tag.find_all('div',  # type: ignore
+                                        attrs={'class': re.compile('vacancy-card--z')})
         self.parsed_offers = []
         self.offers_links = []
         self.split_parse_content()
@@ -143,30 +136,30 @@ class HHSoup(BaseSoup):
         :raises TypeError: If an unexpected type is encountered during parsing.
         """
         for offer in self.offers_list:  # type: ignore
-            start_point = offer.next
-            name = start_point.next.find('span').text  # type: ignore
-            link = start_point.next.find('a').attrs.get('href')  # type: ignore
-            second_point = start_point.next.next_sibling.next_sibling.next.next  # type: ignore
-            child_tag = second_point.next.name  # type: ignore
-            if child_tag == 'span':
-                salary: str = (second_point.next.text  # type: ignore
-                               .replace('\u202f', ' ')
-                               .replace('\xa0', ' '))
-                exp: str = (second_point.next.previous.next_sibling  # type: ignore
-                            .text.replace('\xa0', ' '))
-                remote: str = second_point.next_sibling.next_sibling.text  # type: ignore
-                company: str = (second_point.previous.previous.next_sibling  # type: ignore
-                                .next_sibling.find('span').text.replace('\xa0', ' '))
-                self.parsed_offers.append((name, salary, exp,  # type: ignore
-                                           remote, company, link))
-                self.offers_links.append(link)  # type: ignore
+            header = offer.find('h2')
+            name = header.text  # type: ignore
+            link = header.find('a').attrs.get('href')  # type: ignore
+            data = offer.find('div', class_=re.compile('compensation-labels--'))
+            next_element = data.next  # type: ignore
+
+            if next_element.name == 'div':  # type: ignore
+                salary = None
+                exp = next_element
             else:
-                exp: str = second_point.text.replace('\xa0', ' ')  # type: ignore
-                remote: str = second_point.next_sibling.text  # type: ignore
-                company: str = (second_point.previous.previous.next_sibling  # type: ignore
-                                .next_sibling.find('span').text.replace('\xa0', ' '))
-                self.parsed_offers.append((name, exp, remote, company, link))  # type: ignore
-                self.offers_links.append(link)  # type: ignore
+                salary = (next_element.text.replace('\u202f', ' ')  # type: ignore
+                          .replace('\xa0', ' '))
+                exp = next_element.next_sibling  # type: ignore
+            remote = exp.next_sibling  # type: ignore
+            company = offer.find('span', class_=re.compile('company-info-text--'))
+            if company is None:
+                company = offer.find('a', attrs={'data-qa': re.compile('vacancy-serp_')})
+            company = company.text.replace('\xa0', ' ')  # type: ignore
+            try:
+                self.parsed_offers.append((name, salary, exp.text, remote.text,  # type: ignore
+                                           company, link))
+            except (AttributeError, TypeError):
+                pass
+            self.offers_links.append(link)  # type: ignore
 
     def parse_descriptions(self, extra_content: str) -> None:
         """
@@ -180,10 +173,8 @@ class HHSoup(BaseSoup):
         """
         self.descriptions = []
         text_block = self.get_tag('div', content=extra_content,
-                                  attrs={'class': 'bloko-text bloko-text_large'})
-
-        description = (text_block.next.next.next.next_sibling  # type: ignore
-                       .next_sibling.next_sibling.text)
-        description_text = description.split('Задайте')[0]
-        print(description_text)
-        self.descriptions.append(description)
+                                  attrs={'class': 'vacancy-description'})
+        description_full = text_block.text  # type: ignore
+        description_part = description_full.split('Задайте')[0]
+        single_line_text = ' '.join(description_part.split())
+        self.descriptions.append(single_line_text)

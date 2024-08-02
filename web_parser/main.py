@@ -5,7 +5,7 @@ from typing import cast
 import asyncio
 # pylint: disable=E0401
 # pylint: disable=W4901
-from parser import HHParser, HH_URL, HHSoup
+from web_parser import HHParser, HH_URL, HHSoup
 
 # Create an instance of HHParser
 parser: HHParser = HHParser(HH_URL, HHSoup)

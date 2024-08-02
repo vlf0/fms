@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import '../styles/auth_styles.css';
+import '../styles/AuthStyles.css';
 
 
 const RegistrationForm = ({ onSwitchForm }) => {
@@ -16,17 +16,17 @@ const RegistrationForm = ({ onSwitchForm }) => {
     setSuccess('');
 
     try {
-      const response = await fetch('http://localhost:8000/api/v1/register', {
-        method: 'post',
+      const response = await fetch("http://localhost:8000/api/v1/register", {
+        method: "post",
         headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
         },
         body: JSON.stringify({ email, name, password }),
       });
       if (!response.ok) {
-        throw new Error('User with this email is already exists');
+        throw new Error("User with this email is already exists");
       }
-      setSuccess('Registration successful!');
+      setSuccess("Registration successful!");
     } catch (error) {
       setError(error.message);
     }

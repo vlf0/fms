@@ -7,11 +7,14 @@ and BeautifulSoup.
 import random
 from abc import ABC, abstractmethod
 import asyncio
+from fastapi.responses import JSONResponse
+from fastapi import status
 from playwright.async_api import (
     async_playwright,
     Browser,
     BrowserContext,
-    Page
+    Page,
+    TimeoutError as PWTimeoutError
 )
 from .soups import HHSoup, BaseSoup
 
@@ -118,15 +121,15 @@ class BaseParser(AbstractParser):
                     while retries < max_retries:
                         try:
                             await p.goto(self.url)
-                            await p.wait_for_load_state()
+                            await p.wait_for_load_state('load')
                             content = await p.content()
                             soup_instance = self.soup_class(content, self.parser_type)
                             return soup_instance
-                        except TimeoutError as e:
+                        except PWTimeoutError as e:
                             retries += 1
                             print(f"Attempt {retries} failed: {e}. Retrying...")
-                            await asyncio.sleep(2 ** retries)  # exponential backoff
-                    raise TimeoutError("Max retries exceeded while trying to load the page")
+                            await asyncio.sleep(2 * retries)
+                    raise PWTimeoutError("Max retries exceeded while trying to load the page")
 
 
 class HHParser(BaseParser):
@@ -153,7 +156,7 @@ class HHParser(BaseParser):
         self.tag_name = tag_name
         if tag_attrs is None:
             self.tag_attrs: dict[str, str] | None = {
-                'class': 'HH-MainContent HH-Supernova-MainContent'
+                'data-qa': 'vacancy-serp__results'
             }
 
     async def start_browser(self) -> HHSoup:
@@ -190,7 +193,7 @@ class HHParser(BaseParser):
             context = await self._create_context(browser)
             async with browser:
                 assert isinstance(soup_instance.offers_links, list)
-                for link in soup_instance.offers_links:
+                for link in soup_instance.offers_links[:5]:
                     page = await self._create_page(context)
                     tasks.append(self._parse_page(page, link))
                 await asyncio.gather(*tasks)
@@ -203,11 +206,27 @@ class HHParser(BaseParser):
         :param page: Page object from Playwright.
         :param link: URL to navigate to.
         """
-        try:
-            await page.goto(link)
-            await page.wait_for_load_state('domcontentloaded')
-            content = await page.content()
-            soup_instance = self.soup_class(content, self.parser_type)
-            soup_instance.parse_descriptions(content)
-        finally:
-            await page.close()
+        max_retries = 3
+        retries = 0
+        while retries < max_retries:
+            try:
+                await page.goto(link)
+                await page.wait_for_load_state('load')
+                content = await page.content()
+                soup_instance = self.soup_class(content, self.parser_type)
+                soup_instance.parse_descriptions(content)
+                return
+            except PWTimeoutError as e:
+                retries += 1
+                print(f"Attempt {retries} failed: {e}. Retrying...")
+                await asyncio.sleep(2 * retries)
+        raise PWTimeoutError("Max retries exceeded while trying to load the page")
+
+
+async def main() -> JSONResponse:
+    """Start parser working and return parsed data as the response."""
+    parser: HHParser = HHParser(HH_URL, HHSoup)
+    soup_instance: HHSoup = await parser.parse_many()
+    response: JSONResponse = JSONResponse(content=soup_instance.parsed_offers,
+                                          status_code=status.HTTP_200_OK)
+    return response

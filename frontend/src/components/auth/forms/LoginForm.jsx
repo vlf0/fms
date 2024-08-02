@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import '../styles/auth_styles.css';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import "../styles/AuthStyles.css";
 
 
 const LoginForm = ({ onSwitchForm }) => {
@@ -7,6 +8,7 @@ const LoginForm = ({ onSwitchForm }) => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -14,20 +16,21 @@ const LoginForm = ({ onSwitchForm }) => {
     setSuccess('');
 
     try {
-      const response = await fetch('http://localhost:8000/api/v1/login', {
-        method: 'POST',
+      const response = await fetch("http://localhost:8000/api/v1/login", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ name, password }),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.detail || 'Registration failed');
+        throw new Error(errorData.detail || "Registration failed");
       }
 
-      setSuccess('Login successful!');
+      setSuccess("Login successful!");
+      navigate("/main");
     } catch (error) {
       setError(error.message);
     }

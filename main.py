@@ -5,12 +5,15 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 # pylint: disable=E0401
+# pylint: disable=C0411
 from auth.endpoints import router as auth_router
+from web_parser.endpoints import router as parser_router
 
 load_dotenv()
 
 app = FastAPI()
 app.include_router(auth_router)
+app.include_router(parser_router)
 
 origins = [
     'http://localhost:3000',
@@ -21,3 +24,8 @@ app.add_middleware(
     allow_methods=['GET', 'HEAD', 'OPTIONS', 'POST'],
     allow_headers=['Access-Control-Allow-Origin']
 )
+
+
+# @router.post('/main')
+# async def index() -> JSONResponse:
+#     return

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """Class to authenticate and JWT token generation."""
 import datetime
-from datetime import timedelta
+from datetime import timedelta, timezone
 from typing import Dict, Any
 import jwt
 from jwt.exceptions import ExpiredSignatureError, PyJWTError
@@ -66,9 +66,11 @@ class AuthHandler:
         """
         to_encode = data.copy()
         if expires_delta:
-            expire = datetime.datetime.now(datetime.UTC) + expires_delta  # type: ignore
+            # pylint: disable=E1101
+            expire = datetime.datetime.now(timezone.utc) + expires_delta
         else:
-            expire = (datetime.datetime.now(datetime.UTC)  # type: ignore
+            # pylint: disable=E1101
+            expire = (datetime.datetime.now(timezone.utc)
                       + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
         to_encode.update({"iat": int(expire.timestamp())})
         encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
