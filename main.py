@@ -15,15 +15,31 @@ app = FastAPI()
 app.include_router(auth_router)
 app.include_router(parser_router)
 
+# origins = [
+#     'http://localhost:3000',
+# ]
+# app.add_middleware(
+#     CORSMiddleware,
+#     allow_origins=origins,
+#     allow_methods=['GET', 'HEAD', 'OPTIONS', 'POST'],
+#     allow_headers=['Content-Type', 'Access-Control-Allow-Origin'],
+#     allow_credentials=True
+# )
+
+
 origins = [
+    'http://localhost',
     'http://localhost:3000',
 ]
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
-    allow_methods=['GET', 'HEAD', 'OPTIONS', 'POST'],
-    allow_headers=['Access-Control-Allow-Origin']
+    allow_credentials=True,
+    allow_methods=['GET', 'POST'],
+    # allow_headers=['Cookie'],
 )
+
 
 
 # @router.post('/main')

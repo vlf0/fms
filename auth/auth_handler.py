@@ -7,13 +7,15 @@ from typing import Dict, Any
 import jwt
 from jwt.exceptions import ExpiredSignatureError, PyJWTError
 import bcrypt
-from fastapi import HTTPException, status
+from fastapi import HTTPException, status, Depends, Request
+from fastapi.security import OAuth2PasswordBearer
 from fms.settings import settings  # type: ignore
 
 
 SECRET_KEY = settings.jwt_secret_key
-ALGORITHM = "HS256"
+ALGORITHM = 'HS256'
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
+# oauth2_scheme = OAuth2PasswordBearer(tokenUrl='token')
 
 
 class AuthHandler:
@@ -72,14 +74,14 @@ class AuthHandler:
             # pylint: disable=E1101
             expire = (datetime.datetime.now(timezone.utc)
                       + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
-        to_encode.update({"iat": int(expire.timestamp())})
+        to_encode.update({'exp': int(expire.timestamp())})
         encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
         return encoded_jwt
 
     @staticmethod
-    def decode_access_token(token: str) -> dict[str, Any]:
+    def verify_token(token: str) -> dict[str, Any]:
         """
-        Decodes a JWT token and returns the payload.
+        Decodes and verify JWT token.
 
         :param token: str: The JWT token to decode.
         :return: dict[str, Any]: The decoded payload.
@@ -87,10 +89,22 @@ class AuthHandler:
         """
         try:
             payload: dict[str, Any] = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+            if 'sub' not in payload:
+                raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                                    detail='Invalid token')
+            print('payload',  payload)
             return payload
         except ExpiredSignatureError as exc:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-                                detail="Token has expired") from exc
+                                detail='Token has expired') from exc
         except PyJWTError as exc:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-                                detail="Could not validate credentials") from exc
+                                detail='Could not validate credentials') from exc
+
+    @staticmethod
+    def get_current_user(request: Request) -> dict[str, Any]:
+        token = request.cookies.get('token')
+        if token is None:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                                detail='Not authenticated')
+        return AuthHandler.verify_token(token)

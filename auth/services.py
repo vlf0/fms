@@ -68,9 +68,11 @@ class UserAuthenticate:
                 data={'sub': user.name}, expires_delta=access_token_expires
             )
             response = JSONResponse(status_code=status.HTTP_200_OK,
-                                    content={'token': access_token})
+                                    content={'message': 'coockie sended'})
             response.set_cookie(key='token',
                                 value=access_token,
                                 expires=259200,
-                                httponly=True)
+                                httponly=True,
+                                domain='localhost',
+                                )
             return response
