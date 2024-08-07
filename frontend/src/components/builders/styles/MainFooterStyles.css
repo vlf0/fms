@@ -1,5 +1,9 @@
 .footer {
-  /* position: relative; */
   background-color: #242127;
   box-shadow: 0px 2px 10px 0px #180137;
+}
+
+.subscribe-links {
+  margin: 3px; 
+  padding: 2px;
 }

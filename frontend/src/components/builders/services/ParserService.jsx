@@ -1,19 +1,17 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import "../styles/ServicesStyles.css";
 
 
 const ParserService = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const navigate = useNavigate();
 
   const handleSubmit = async () => {
     setError('');
     setSuccess('');
-
+    
     try {
-      const response = await fetch("http://localhost:8000/api/v1/check_user", {
+      const response = await fetch("http://localhost:8000/api/v1/run_parser", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -26,14 +24,10 @@ const ParserService = () => {
         throw new Error(errorData.detail || "Parser operation failed");
       }
 
-      const result = await response.json(); 
       setSuccess("Parser operation successful!");
-      console.log(result);
-
     
     } catch (error) {
-      navigate("/login");
-      setError(error.message);
+      setError("You are not authorized! [" + error.message + "]");
     }
   };
 

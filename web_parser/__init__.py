@@ -12,6 +12,6 @@ if str(CUSTOM_ROOT_DIR) not in sys.path:
 
 # pylint: disable=C0413
 from .soups import BaseSoup, HHSoup
-from .parsers import BaseParser, HHParser, HH_URL, main
+from .parsers import BaseParser, HHParser, HH_URL
 
-__all__ = ["BaseSoup", "HHSoup", "BaseParser", "HHParser", "HH_URL", "main"]
+__all__ = ['BaseSoup', 'HHSoup', 'BaseParser', 'HHParser', 'HH_URL']

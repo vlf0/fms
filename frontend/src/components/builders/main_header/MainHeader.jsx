@@ -10,7 +10,6 @@ const MainHeader = () => {
     <Navbar className="main-navbar">
       <Container>
         <Navbar.Brand>API Tools</Navbar.Brand>
-
         <Nav className="me-auto">
           <NavDropdown title="Dropdown" id="nav-dropdown">
             <NavDropdown.Item href="#action1">Action</NavDropdown.Item>
@@ -21,7 +20,6 @@ const MainHeader = () => {
           </NavDropdown>
         </Nav>
         <AuthButton />
-
       </Container>
     </Navbar>
   );

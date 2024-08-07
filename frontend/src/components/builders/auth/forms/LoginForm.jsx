@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { loginUser } from "./funcs/AuthService";
 import "../../styles/AuthStyles.css";
 
 
@@ -15,25 +16,12 @@ const LoginForm = ({ onSwitchForm }) => {
     setError('');
     setSuccess('');
 
-    try {
-      const response = await fetch("http://localhost:8000/api/v1/login", {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ name, password }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || "Registration failed");
-      }
-
-      setSuccess("Login successful!");
+  const result = await loginUser(name, password);
+    if (result.success) {
+      setSuccess(result.message);
       navigate("/");
-    } catch (error) {
-      setError(error.message);
+    } else {
+      setError(result.message);
     }
   };
 

@@ -7,8 +7,6 @@ and BeautifulSoup.
 import random
 from abc import ABC, abstractmethod
 import asyncio
-from fastapi.responses import JSONResponse
-from fastapi import status
 from playwright.async_api import (
     async_playwright,
     Browser,
@@ -221,12 +219,3 @@ class HHParser(BaseParser):
                 print(f"Attempt {retries} failed: {e}. Retrying...")
                 await asyncio.sleep(2 * retries)
         raise PWTimeoutError("Max retries exceeded while trying to load the page")
-
-
-async def main() -> JSONResponse:
-    """Start parser working and return parsed data as the response."""
-    parser: HHParser = HHParser(HH_URL, HHSoup)
-    soup_instance: HHSoup = await parser.parse_many()
-    response: JSONResponse = JSONResponse(content=soup_instance.parsed_offers,
-                                          status_code=status.HTTP_200_OK)
-    return response

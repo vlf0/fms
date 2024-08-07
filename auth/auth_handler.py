@@ -7,15 +7,14 @@ from typing import Dict, Any
 import jwt
 from jwt.exceptions import ExpiredSignatureError, PyJWTError
 import bcrypt
-from fastapi import HTTPException, status, Depends, Request
-from fastapi.security import OAuth2PasswordBearer
+from fastapi import HTTPException, status, Request
+from fastapi.responses import JSONResponse
 from fms.settings import settings  # type: ignore
 
 
 SECRET_KEY = settings.jwt_secret_key
 ALGORITHM = 'HS256'
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
-# oauth2_scheme = OAuth2PasswordBearer(tokenUrl='token')
 
 
 class AuthHandler:
@@ -81,7 +80,7 @@ class AuthHandler:
     @staticmethod
     def verify_token(token: str) -> dict[str, Any]:
         """
-        Decodes and verify JWT token.
+        Decodes and verifies a JWT token.
 
         :param token: str: The JWT token to decode.
         :return: dict[str, Any]: The decoded payload.
@@ -92,7 +91,6 @@ class AuthHandler:
             if 'sub' not in payload:
                 raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                                     detail='Invalid token')
-            print('payload',  payload)
             return payload
         except ExpiredSignatureError as exc:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
@@ -102,9 +100,40 @@ class AuthHandler:
                                 detail='Could not validate credentials') from exc
 
     @staticmethod
-    def get_current_user(request: Request) -> dict[str, Any]:
-        token = request.cookies.get('token')
-        if token is None:
+    def check_auth(request: Request) -> JSONResponse:
+        """
+        Checks if the user is authenticated based on the JWT token
+        in cookies.
+
+        :param request: Request: The HTTP request containing
+         the JWT token in cookies.
+        :return: JSONResponse: A JSON response indicating whether
+         the user is authenticated.
+        :raises HTTPException: If the token is missing or revoked.
+        """
+        token = request.cookies.get('auth_token')
+        if token is None or token == 'revoked':
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                                 detail='Not authenticated')
-        return AuthHandler.verify_token(token)
+        AuthHandler.verify_token(token)
+        return JSONResponse(content={'detail': 'User is authenticated'},
+                            status_code=status.HTTP_200_OK)
+
+    @staticmethod
+    # pylint: disable=W0613
+    def logout_user(request: Request) -> JSONResponse:
+        """
+        Logs out the user by revoking the JWT token and clearing it from
+        cookies.
+
+        :param request: Request: The HTTP request to process the logout.
+        :return: JSONResponse: A JSON response confirming logout success.
+        """
+        response = JSONResponse(content={'detail': 'Logout success.'},
+                                status_code=status.HTTP_200_OK)
+        response.set_cookie(key='auth_token',
+                            value='revoked',
+                            expires='01.01.1970',
+                            httponly=True,
+                            domain='localhost')
+        return response

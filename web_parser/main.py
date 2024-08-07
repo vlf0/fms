@@ -1,22 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """Script to starting parsers."""
-from typing import cast
-import asyncio
+from fastapi import status
+from fastapi.responses import JSONResponse
 # pylint: disable=E0401
 # pylint: disable=W4901
 from web_parser import HHParser, HH_URL, HHSoup
 
-# Create an instance of HHParser
-parser: HHParser = HHParser(HH_URL, HHSoup)
 
-# Run the parser to get processed instance
-processed_instance = asyncio.run(parser.parse())
-
-# Get the list of offers
-offers = processed_instance.parsed_offers
-offers = cast(list[tuple[str, ...]], offers)
-
-# Print each offer
-for i in offers:
-    print(i)
+async def hh_parser() -> JSONResponse:
+    """Start parser working and return parsed data as the response."""
+    parser: HHParser = HHParser(HH_URL, HHSoup)
+    soup_instance: HHSoup = await parser.parse_many()
+    response: JSONResponse = JSONResponse(content=soup_instance.parsed_offers,
+                                          status_code=status.HTTP_200_OK)
+    return response

@@ -13,9 +13,14 @@ body {
   min-height: 100vh;
 }
 
-
 .error-message {
   color: #e20000;
+  font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+  padding: 3px;
+}
+
+.success-message {
+  color: #00b203;
   font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
   padding: 3px;
 }

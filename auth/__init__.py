@@ -13,5 +13,6 @@ if str(CUSTOM_ROOT_DIR) not in sys.path:
 
 # pylint: disable=C0413
 from .models import User
+from .auth_handler import AuthHandler
 
-__all__ = ['User']
+__all__ = ['User', 'AuthHandler']

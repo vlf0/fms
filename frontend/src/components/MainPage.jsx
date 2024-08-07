@@ -5,7 +5,6 @@ import MainFooter from "./builders/footer/MainFooter";
 
 
 const MainPage = () => {
-  console.log(document)
   return (
     <div className="main-page">
       <MainHeader />
