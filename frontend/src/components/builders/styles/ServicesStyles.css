@@ -1,0 +1,38 @@
+.one-service-container {
+  margin: 10px 0;
+  display: grid;
+  /* text-align: center; */
+}
+
+.services-href-container {
+  /* text-align: center; */
+  padding: 7px;
+}
+
+.services-button {
+  width: 50%;
+  justify-self: center;
+  font-size: 20px;
+  font-family: sans-serif;
+  color: #cdaede;
+  text-decoration: none;
+  padding: 10px 20px; /* Add padding for button-like appearance */
+  background-color: #433b47; /* Background color for the button */
+  border-radius: 5px; /* Rounded corners */
+  border: 1px solid #cdaede; /* Optional border */
+  transition: background-color 0.3s, color 0.3s; /* Smooth transition */
+}
+  
+.description-text {
+  font-family: sans-serif;
+  font-variant: petite-caps;
+}
+
+.services-href:hover {
+  background-color: #cdaede; /* Change background on hover */
+  color: #433b47; /* Change text color on hover */
+}
+
+.services-panel {
+  text-align: center;
+}

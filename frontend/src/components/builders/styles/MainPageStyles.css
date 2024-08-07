@@ -1,0 +1,32 @@
+body {
+  height: 100%;
+  background: #53465a;
+  font-family: Arial, sans-serif;
+  color: #f5f5f5;
+  margin: 0;
+  padding: 0;
+}
+  
+#root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.error-message {
+  color: #e20000;
+  font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+  padding: 3px;
+}
+
+.success-message {
+  color: #00b203;
+  font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+  padding: 3px;
+}
+
+.main-page {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}

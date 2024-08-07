@@ -1,43 +1,47 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """The `main` module of app, the entrypoint."""
-from typing import Annotated
-from fastapi import FastAPI, Depends
-from pydantic import BaseModel
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 # pylint: disable=E0401
-from settings import settings
+# pylint: disable=C0411
+from auth.endpoints import router as auth_router
+from web_parser.endpoints import router as parser_router
 
 load_dotenv()
+
 app = FastAPI()
+app.include_router(auth_router)
+app.include_router(parser_router)
+
+# origins = [
+#     'http://localhost:3000',
+# ]
+# app.add_middleware(
+#     CORSMiddleware,
+#     allow_origins=origins,
+#     allow_methods=['GET', 'HEAD', 'OPTIONS', 'POST'],
+#     allow_headers=['Content-Type', 'Access-Control-Allow-Origin'],
+#     allow_credentials=True
+# )
 
 
-class Task(BaseModel):
-    """A class to represent a task."""
+origins = [
+    'http://localhost',
+    'http://localhost:3000',
+]
 
-    info: str
-
-
-tasks = []
-
-
-@app.get('/')
-async def index() -> dict[str, str]:
-    """
-    Endpoint to get the database URL message.
-
-    :return: dict: A dictionary containing the message with the database URL.
-    """
-    return {'message': f'{settings.kis_db_url}'}
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=['GET', 'POST'],
+    # allow_headers=['Cookie'],
+)
 
 
-@app.post('/insert')
-async def adding(task: Annotated[Task, Depends()]) -> dict[str, int]:
-    """
-    Endpoint to add a task to the list.
 
-    :param task: Task: The task to be added.
-    :return: dict: A dictionary containing the status code.
-    """
-    tasks.append(task)
-    return {'status code': 200}
+# @router.post('/main')
+# async def index() -> JSONResponse:
+#     return

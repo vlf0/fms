@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """Contains tests for `parse` module checking."""
 import pytest
 from typing import AsyncGenerator
