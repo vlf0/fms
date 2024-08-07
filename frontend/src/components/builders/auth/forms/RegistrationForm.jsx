@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import '../styles/AuthStyles.css';
+import React, { useState } from "react";
+import "../../styles/AuthStyles.css";
 
 
 const RegistrationForm = ({ onSwitchForm }) => {

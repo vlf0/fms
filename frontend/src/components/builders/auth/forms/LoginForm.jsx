@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "../styles/AuthStyles.css";
+import "../../styles/AuthStyles.css";
 
 
 const LoginForm = ({ onSwitchForm }) => {
@@ -31,7 +31,7 @@ const LoginForm = ({ onSwitchForm }) => {
       }
 
       setSuccess("Login successful!");
-      navigate("/main");
+      navigate("/");
     } catch (error) {
       setError(error.message);
     }

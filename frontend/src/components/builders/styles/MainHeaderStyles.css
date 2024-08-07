@@ -1,0 +1,79 @@
+
+.custom-brand {
+  color: #ccc0e4 !important; 
+  margin: 5px;
+}
+  
+.main-navbar {
+  background-color: #3e2c5f; 
+  box-shadow: 0px 2px 10px 0px #180137;
+}
+
+.navbar-toggler {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.auth-button {
+  color: #e6bdff;
+  background-color: #291e33;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  transition: background-color 0.3s ease;
+}
+
+.auth-button-icon {
+  display: none;
+  color: #e6bdff;
+  background-color: #291e33;
+  border: none;
+  padding: 10px;
+  border-radius: 50%;
+}
+
+@media (max-width: 768px) {
+  .auth-button-icon {
+    display: inline-block;
+  }
+}
+
+.auth-button:hover,
+.auth-button-icon:hover {
+  background-color: #833ea1;
+}
+
+.auth-button:active,
+.auth-button-icon:active {
+  background-color: #aa5bcc !important;
+}
+
+@media (max-width: 768px) {
+  .auth-button {
+    display: none;
+  }
+}
+
+@media (min-width: 769px) {
+  .auth-button {
+    display: inline-block;
+  }
+}
+
+.auth-button-icon {
+  display: none;
+  color: #ffffff;
+  background-color: #291e33;
+  border: none;
+  padding: 10px;
+  border-radius: 50%;
+}
+
+@media (max-width: 768px) {
+  .auth-button-icon {
+    display: inline-block;
+  }
+}
+
+.dropdown-menu {
+  background-color: #e7c5fb;
+}

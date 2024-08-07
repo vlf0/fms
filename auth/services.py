@@ -75,4 +75,5 @@ class UserAuthenticate:
                                 httponly=True,
                                 domain='localhost',
                                 )
+            print(access_token)
             return response

@@ -1,12 +1,12 @@
 import React, { useState } from "react";
-// import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import "../styles/ServicesStyles.css";
 
 
 const ParserService = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  // const navigate = useNavigate();
+  const navigate = useNavigate();
 
   const handleSubmit = async () => {
     setError('');
@@ -30,8 +30,9 @@ const ParserService = () => {
       setSuccess("Parser operation successful!");
       console.log(result);
 
-      // navigate("/main");
+    
     } catch (error) {
+      navigate("/login");
       setError(error.message);
     }
   };

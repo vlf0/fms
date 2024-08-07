@@ -1,16 +1,17 @@
 import React from "react";
-import Header from "../Header";
-import ServicesSection from "./s_menu/ServicesSection";
+import MainHeader from "./builders/main_header/MainHeader";
+import GreedSection from "./builders/greed_section/GreedSection";
+import MainFooter from "./builders/footer/MainFooter";
 
 
 const MainPage = () => {
+  console.log(document)
   return (
-    <>
-      <header className="main-page-header">
-        <Header headerText={"Welcome to fastapi service"}/>
-      </header>
-      <ServicesSection />
-    </>
+    <div className="main-page">
+      <MainHeader />
+      <GreedSection />
+      <MainFooter />
+    </div>
   );
 };
 
