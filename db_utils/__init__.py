@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """Initializes a database session using the SessionManager class."""
+import os
 import sys
 from pathlib import Path
 
@@ -14,4 +15,6 @@ if str(CUSTOM_ROOT_DIR) not in sys.path:
 # pylint: disable=C0413
 from .database import SessionManager
 
-session = SessionManager().session_local
+session_manager: SessionManager = SessionManager()
+
+__all__ = ['session_manager']

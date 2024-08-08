@@ -1,8 +1,16 @@
 """Description `parser` module tests setups as a fixtures."""
+import os
 from typing import AsyncGenerator
 import pytest
 from pytest import FixtureRequest
 from playwright.async_api import async_playwright, Browser, BrowserContext
+from fastapi.testclient import TestClient
+# from sqlalchemy import create_engine
+# from sqlalchemy.orm import sessionmaker
+from auth.models import Base
+from fms.main import app
+from auth import AuthHandler
+from auth.schemas import UserCreate, UserLogin
 
 
 class TestPlaywrightSetup:

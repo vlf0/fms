@@ -19,7 +19,7 @@ async def register_user(user: UserCreate) -> JSONResponse:
     :return: JSONResponse: The response indicating the result
      of the registration process.
     """
-    return await UserAuthenticate.create_user(user)
+    return await UserAuthenticate().create_user(user)
 
 
 @router.post('/api/v1/login')

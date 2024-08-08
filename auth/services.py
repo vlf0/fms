@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """Contains user registration / authentication logic."""
+import os
 from datetime import timedelta
 from fastapi import Request, HTTPException, status
 from fastapi.responses import JSONResponse
-from fms.db_utils import session  # type: ignore
+from fms.db_utils import session_manager  # type: ignore
 from .schemas import UserCreate, UserLogin
 from .models import User
 from .auth_handler import AuthHandler, ACCESS_TOKEN_EXPIRE_MINUTES
@@ -18,8 +19,11 @@ class UserAuthenticate:
     check user authorization, and handle user logout.
     """
 
-    @staticmethod
-    async def create_user(user: UserCreate) -> JSONResponse:
+    def __init__(self):
+        self.engine = session_manager.engine
+        self.session = session_manager.session_local
+
+    async def create_user(self, user: UserCreate) -> JSONResponse:
         """
         Registers a new user in the system.
 
@@ -34,13 +38,16 @@ class UserAuthenticate:
         :raises HTTPException: If the user already exists with
          the given email.
         """
-        with session as s:
+        print()
+        print(os.getenv('TESTING', False))
+        print(self.engine.engine)
+        print()
+        with self.session as s:
             user_instance = (s.query(User)
                              .filter(User.email == user.email)
                              .first())
             if user_instance is None:
                 hashed_password = AuthHandler.get_password_hash(user.password)
-                print('save to db pass: ', hashed_password)
                 new_user = User(name=user.name,  # type: ignore
                                 password=hashed_password,
                                 email=user.email,

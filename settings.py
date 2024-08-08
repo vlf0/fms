@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     kis_db_url: str = 'default'
     jwt_secret_key: str = 'default'
 
-    class Config:
+    class ConfigDict:
         """Represent rows of variables from .env file."""
 
         env_file = ".env"

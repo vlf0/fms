@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """Contains DB manager interface and its implementations."""
+import os
 from typing import Sequence
 from sqlalchemy import create_engine, Connection, Table
 from sqlalchemy.orm import sessionmaker, Session
@@ -19,6 +20,8 @@ class SessionManager:
          to the engine.
     """
 
+    SQLITE_MEMORY = 'sqlite:///:memory:'
+
     def __init__(self) -> None:
         """
         Initializes the SessionManager with a database connection
@@ -27,7 +30,14 @@ class SessionManager:
         :param settings.kis_db_url: str: The database URL from the
          settings.
         """
-        self.engine: Connection = create_engine(settings.kis_db_url, echo=True).connect()
+        print(os.getenv('TESTING', False))
+        if not os.getenv('TESTING', False):
+            self.engine: Connection = create_engine(settings.kis_db_url).connect()
+        else:
+            self.engine: Connection = create_engine(
+                self.SQLITE_MEMORY,
+                connect_args={'check_same_thread': False}
+            ).connect()
         self.session_local: Session = sessionmaker(autoflush=False, bind=self.engine)()
 
     def create_tables(self, tables: Sequence[Table] | None = None) -> None:
