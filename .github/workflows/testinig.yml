@@ -25,5 +25,4 @@ jobs:
           source venv/bin/activate
           playwright install chromium
           playwright install-deps chromium
-          python3 -c "import os; print('TESTING:', os.getenv('TESTING')); print('Environment Variables:', os.environ); exit()"
           pytest .

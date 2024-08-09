@@ -21,10 +21,10 @@ class UserAuthenticate:
     """
 
     def __init__(self) -> None:
-        self.engine = session_manager.engine
         self.session = session_manager.session_local
+        self.engine = session_manager.engine
 
-    async def create_user(self, user: UserCreate) -> JSONResponse:
+    async def create_user(self, user:  UserCreate) -> JSONResponse:
         """
         Registers a new user in the system.
 
