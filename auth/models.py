@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """Description the models of app's database."""
+import os
 # pylint: disable=R0903
 from sqlalchemy import (
     Column,
@@ -16,7 +17,7 @@ class User(Base):
     """Represents a user in the system."""
 
     __tablename__ = 'users'
-    __table_args__ = {'schema': 'mm'}
+    __table_args__ = {'schema': 'mm'} if not os.getenv('TESTING', '') else {}
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = Column(String, unique=True, index=True)

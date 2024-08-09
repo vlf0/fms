@@ -2,9 +2,11 @@
 # -*- coding: utf-8 -*-
 """Contains user registration / authentication logic."""
 from datetime import timedelta
+
 from fastapi import Request, HTTPException, status
 from fastapi.responses import JSONResponse
-from fms.db_utils import session  # type: ignore
+
+from db_utils import session_manager
 from .schemas import UserCreate, UserLogin
 from .models import User
 from .auth_handler import AuthHandler, ACCESS_TOKEN_EXPIRE_MINUTES
@@ -18,8 +20,11 @@ class UserAuthenticate:
     check user authorization, and handle user logout.
     """
 
-    @staticmethod
-    async def create_user(user: UserCreate) -> JSONResponse:
+    def __init__(self) -> None:
+        self.session = session_manager.session_local
+        self.engine = session_manager.engine
+
+    async def create_user(self, user:  UserCreate) -> JSONResponse:
         """
         Registers a new user in the system.
 
@@ -34,13 +39,12 @@ class UserAuthenticate:
         :raises HTTPException: If the user already exists with
          the given email.
         """
-        with session as s:
+        with self.session as s:
             user_instance = (s.query(User)
                              .filter(User.email == user.email)
                              .first())
             if user_instance is None:
                 hashed_password = AuthHandler.get_password_hash(user.password)
-                print('save to db pass: ', hashed_password)
                 new_user = User(name=user.name,  # type: ignore
                                 password=hashed_password,
                                 email=user.email,
@@ -53,8 +57,7 @@ class UserAuthenticate:
             raise HTTPException(status_code=status.HTTP_409_CONFLICT,
                                 detail='User already exists!')
 
-    @staticmethod
-    async def authenticate_user(user: UserLogin) -> JSONResponse:
+    async def authenticate_user(self, user: UserLogin) -> JSONResponse:
         """
         Authenticates a user and returns a JWT token.
 
@@ -67,7 +70,7 @@ class UserAuthenticate:
          if authentication is successful.
         :raises HTTPException: If the credentials are invalid.
         """
-        with session as s:
+        with self.session as s:
             user_instance = (s.query(User)
                              .filter(User.name == user.name)
                              .first())
@@ -90,8 +93,8 @@ class UserAuthenticate:
                                 )
             return response
 
-    @staticmethod
-    async def check_user_authorizing(request: Request) -> JSONResponse:
+    # @staticmethod
+    async def check_user_authorizing(self, request: Request) -> JSONResponse:
         """
         Checks if the user is authenticated based on
         the JWT token in the request cookies.

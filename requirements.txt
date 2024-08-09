@@ -18,3 +18,4 @@ types-html5lib==1.1.11.20240228
 bcrypt==4.2.0
 passlib==1.7.4
 pyjwt==2.8.0
+pytest-env==1.1.3

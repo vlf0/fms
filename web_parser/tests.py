@@ -3,7 +3,7 @@
 """Contains tests for `parse` module checking."""
 import pytest
 from typing import AsyncGenerator
-from fms.conftest import TestPlaywrightSetup  # type: ignore
+from conftest import TestPlaywrightSetup
 from playwright.async_api import BrowserContext, Page, Browser
 from .parsers import BaseParser, USER_AGENTS
 from .soups import BaseSoup
@@ -11,11 +11,13 @@ from .soups import BaseSoup
 
 @pytest.mark.asyncio
 @pytest.mark.usefixtures('get_url')
-class TestSoups(TestPlaywrightSetup):  # type: ignore
+class TestSoups(TestPlaywrightSetup):
     """
     Class grouping tests by relationship
     to playwright functionality.
     """
+
+    url: str
 
     async def test_create_context_correct(
             self,
