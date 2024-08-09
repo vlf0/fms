@@ -9,9 +9,6 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import Mapped, declarative_base, DeclarativeMeta, mapped_column
 
-TESTING = os.getenv('TESTING', False)
-print(TESTING)
-
 Base: DeclarativeMeta = declarative_base()
 
 
@@ -20,7 +17,7 @@ class User(Base):
     """Represents a user in the system."""
 
     __tablename__ = 'users'
-    __table_args__ = {'schema': 'mm'} if TESTING else {}
+    __table_args__ = {'schema': 'mm'} if not os.getenv('TESTING', '') else {}
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = Column(String, unique=True, index=True)

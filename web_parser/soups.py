@@ -5,7 +5,7 @@ from typing import Any
 import re
 from abc import ABC, abstractmethod
 from bs4 import BeautifulSoup, Tag, NavigableString
-from fms.exceptions import TagNotFindError  # type: ignore
+from exceptions import TagNotFindError
 
 
 class AbstractSoup(ABC):

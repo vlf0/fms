@@ -9,7 +9,7 @@ from jwt.exceptions import ExpiredSignatureError, PyJWTError
 import bcrypt
 from fastapi import HTTPException, status, Request
 from fastapi.responses import JSONResponse
-from fms.settings import settings  # type: ignore
+from settings import settings
 
 
 SECRET_KEY = settings.jwt_secret_key
@@ -111,6 +111,10 @@ class AuthHandler:
          the user is authenticated.
         :raises HTTPException: If the token is missing or revoked.
         """
+        # pylint: disable=W0511
+        # TODO: Create checking for existing user in db. Now if user is
+        #  not exists, but token is not revoked - check passes
+        #  success, but it is incorrect behavior
         token = request.cookies.get('auth_token')
         if token is None or token == 'revoked':
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
@@ -129,11 +133,16 @@ class AuthHandler:
         :param request: Request: The HTTP request to process the logout.
         :return: JSONResponse: A JSON response confirming logout success.
         """
-        response = JSONResponse(content={'detail': 'Logout success.'},
-                                status_code=status.HTTP_200_OK)
-        response.set_cookie(key='auth_token',
-                            value='revoked',
-                            expires='01.01.1970',
-                            httponly=True,
-                            domain='localhost')
+        cookie = request.cookies.get('auth_token')
+        if cookie and cookie != 'revoked':
+            response = JSONResponse(content={'detail': 'Logout success.'},
+                                    status_code=status.HTTP_200_OK)
+            response.set_cookie(key='auth_token',
+                                value='revoked',
+                                expires='01.01.1970',
+                                httponly=True,
+                                domain='localhost')
+        else:
+            response = JSONResponse(content={'detail': 'User is not authorized, nothing logout.'},
+                                    status_code=status.HTTP_204_NO_CONTENT)
         return response

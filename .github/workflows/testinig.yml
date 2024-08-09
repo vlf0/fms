@@ -1,4 +1,4 @@
-name: Linting and types checking
+name: Testing
 on: [push, workflow_dispatch]
 jobs:
   check-up:
@@ -6,6 +6,7 @@ jobs:
     environment: development
     env:
       KIS_DB_URL: ${{ secrets.KIS_DB_URL }}
+      TESTING: 'True'
     steps:
       - name: Get code from repository
         uses: actions/checkout@v4
@@ -24,4 +25,5 @@ jobs:
           source venv/bin/activate
           playwright install chromium
           playwright install-deps chromium
+          python3 -c "import os; print('TESTING:', os.getenv('TESTING')); print('Environment Variables:', os.environ); exit()"
           pytest .

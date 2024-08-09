@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """Contains user registration / authentication logic."""
-import os
 from datetime import timedelta
+
 from fastapi import Request, HTTPException, status
 from fastapi.responses import JSONResponse
-from fms.db_utils import session_manager  # type: ignore
+
+from db_utils import session_manager
 from .schemas import UserCreate, UserLogin
 from .models import User
 from .auth_handler import AuthHandler, ACCESS_TOKEN_EXPIRE_MINUTES
@@ -19,7 +20,7 @@ class UserAuthenticate:
     check user authorization, and handle user logout.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.engine = session_manager.engine
         self.session = session_manager.session_local
 
@@ -38,10 +39,6 @@ class UserAuthenticate:
         :raises HTTPException: If the user already exists with
          the given email.
         """
-        print()
-        print(os.getenv('TESTING', False))
-        print(self.engine.engine)
-        print()
         with self.session as s:
             user_instance = (s.query(User)
                              .filter(User.email == user.email)
@@ -60,8 +57,7 @@ class UserAuthenticate:
             raise HTTPException(status_code=status.HTTP_409_CONFLICT,
                                 detail='User already exists!')
 
-    @staticmethod
-    async def authenticate_user(user: UserLogin) -> JSONResponse:
+    async def authenticate_user(self, user: UserLogin) -> JSONResponse:
         """
         Authenticates a user and returns a JWT token.
 
@@ -74,7 +70,7 @@ class UserAuthenticate:
          if authentication is successful.
         :raises HTTPException: If the credentials are invalid.
         """
-        with session as s:
+        with self.session as s:
             user_instance = (s.query(User)
                              .filter(User.name == user.name)
                              .first())
@@ -97,8 +93,8 @@ class UserAuthenticate:
                                 )
             return response
 
-    @staticmethod
-    async def check_user_authorizing(request: Request) -> JSONResponse:
+    # @staticmethod
+    async def check_user_authorizing(self, request: Request) -> JSONResponse:
         """
         Checks if the user is authenticated based on
         the JWT token in the request cookies.

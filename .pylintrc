@@ -52,7 +52,7 @@ ignore=CVS
 # ignore-list. The regex matches against paths and can be in Posix or Windows
 # format. Because '\\' represents the directory delimiter on Windows systems,
 # it can't be used as an escape character.
-ignore-paths=web_parser/tests.py
+ignore-paths=.git,venv,.idea,frontend,web_parser/tests.py
 
 # Files or directories matching the regular expression patterns are skipped.
 # The regex matches against base names, not paths. The default value ignores
@@ -96,7 +96,7 @@ prefer-stubs=no
 py-version=3.12
 
 # Discover python modules and packages in the file system subtree.
-recursive=no
+recursive=yes
 
 # Add paths to the list of the source roots. Supports globbing patterns. The
 # source root is an absolute path or a path relative to the current working

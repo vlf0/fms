@@ -5,8 +5,8 @@ import os
 from typing import Sequence
 from sqlalchemy import create_engine, Connection, Table
 from sqlalchemy.orm import sessionmaker, Session
-from fms.auth.models import Base  # type: ignore
-from fms.settings import settings  # type: ignore
+from auth.models import Base
+from settings import settings
 
 
 # pylint: disable=R0903
@@ -30,14 +30,14 @@ class SessionManager:
         :param settings.kis_db_url: str: The database URL from the
          settings.
         """
-        print(os.getenv('TESTING', False))
-        if not os.getenv('TESTING', False):
+        if not os.getenv('TESTING'):
             self.engine: Connection = create_engine(settings.kis_db_url).connect()
         else:
-            self.engine: Connection = create_engine(
+            self.engine = create_engine(
                 self.SQLITE_MEMORY,
                 connect_args={'check_same_thread': False}
             ).connect()
+
         self.session_local: Session = sessionmaker(autoflush=False, bind=self.engine)()
 
     def create_tables(self, tables: Sequence[Table] | None = None) -> None:

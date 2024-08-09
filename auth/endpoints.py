@@ -31,7 +31,7 @@ async def login_user(user: UserLogin) -> JSONResponse:
     :return: JSONResponse: A JSON response containing the JWT token
      if authentication is successful.
     """
-    return await UserAuthenticate.authenticate_user(user)
+    return await UserAuthenticate().authenticate_user(user)
 
 
 @router.post('/api/v1/check_user')
@@ -45,7 +45,7 @@ async def check_user(request: Request) -> JSONResponse:
     :return: JSONResponse: A JSON response indicating whether the user
      is authenticated.
     """
-    return await UserAuthenticate.check_user_authorizing(request)
+    return await UserAuthenticate().check_user_authorizing(request)
 
 
 @router.post('/api/v1/logout')
@@ -56,4 +56,4 @@ async def logout_user(request: Request) -> JSONResponse:
     :param request: Request: The HTTP request to process the logout.
     :return: JSONResponse: A JSON response confirming logout success.
     """
-    return await UserAuthenticate.logout_user(request)
+    return await UserAuthenticate().logout_user(request)
