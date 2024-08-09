@@ -30,7 +30,7 @@ class SessionManager:
         :param settings.kis_db_url: str: The database URL from the
          settings.
         """
-        if not os.getenv('TESTING'):
+        if not os.getenv('TESTING', ''):
             self.engine: Connection = create_engine(settings.kis_db_url).connect()
         else:
             self.engine = create_engine(
