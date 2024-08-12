@@ -141,7 +141,7 @@ class AuthHandler:
                                 value='revoked',
                                 expires='01.01.1970',
                                 httponly=True,
-                                domain='localhost')
+                                domain='159.65.135.38')
         else:
             response = JSONResponse(content={'detail': 'User is not authorized, nothing logout.'},
                                     status_code=status.HTTP_204_NO_CONTENT)

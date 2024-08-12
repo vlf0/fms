@@ -89,7 +89,7 @@ class UserAuthenticate:
                                 value=access_token,
                                 expires=259200,
                                 httponly=True,
-                                domain='localhost',
+                                domain='159.65.135.38',
                                 )
             return response
 

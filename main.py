@@ -16,8 +16,8 @@ app.include_router(auth_router)
 app.include_router(parser_router)
 
 origins = [
-    'http://localhost',
     'http://localhost:3000',
+    'http://159.65.135.38:30'
 ]
 
 app.add_middleware(
