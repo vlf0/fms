@@ -93,8 +93,8 @@ class UserAuthenticate:
                                 )
             return response
 
-    # @staticmethod
-    async def check_user_authorizing(self, request: Request) -> JSONResponse:
+    @staticmethod
+    async def check_user_authorizing(request: Request) -> JSONResponse:
         """
         Checks if the user is authenticated based on
         the JWT token in the request cookies.
