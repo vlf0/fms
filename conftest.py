@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """Description `parser` module tests setups as a fixtures."""
+import os
 from typing import AsyncGenerator, Generator
 
 import pytest
@@ -29,6 +30,8 @@ class TestAuthSetup:
         and drops the schema after tests are completed. It is scoped
         to the module, meaning it runs once per module.
         """
+        if not os.getenv('TESTING', ''):
+            raise ValueError('"TESTING" env variable was not found.')
         engine: Connection = session_manager.engine
         Base.metadata.create_all(bind=engine)
         engine.commit()
