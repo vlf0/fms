@@ -21,7 +21,7 @@ const AuthButton = () => {
 
     if (isAuthenticated) {
       try {
-        await fetch("http://localhost:8000/api/v1/logout", {
+        await fetch("http://159.65.135.38:80/api/v1/logout", {
           method: "POST",
           credentials: "include",
         });

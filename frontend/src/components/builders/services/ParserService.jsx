@@ -11,7 +11,7 @@ const ParserService = () => {
     setSuccess('');
     
     try {
-      const response = await fetch("http://localhost:8000/api/v1/run_parser", {
+      const response = await fetch("http://159.65.135.38:80/api/v1/run_parser", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

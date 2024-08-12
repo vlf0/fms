@@ -1,5 +1,8 @@
 name: Linting and types checking
-on: [push, workflow_dispatch]
+on:
+  push:
+    branches-ignore:
+      - main
 jobs:
   check-up:
     runs-on: ubuntu-latest

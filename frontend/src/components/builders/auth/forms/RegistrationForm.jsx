@@ -16,7 +16,7 @@ const RegistrationForm = ({ onSwitchForm }) => {
     setSuccess('');
 
     try {
-      const response = await fetch("http://localhost:8000/api/v1/register", {
+      const response = await fetch("http://159.65.135.38:80/api/v1/register", {
         method: "post",
         headers: {
             "Content-Type": "application/json",
