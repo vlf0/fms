@@ -9,7 +9,7 @@ load_dotenv()
 class Settings(BaseSettings):
     """A class to represent application settings."""
 
-    kis_db_url: str = 'default'
+    db_url: str = 'default'
     jwt_secret_key: str = 'default'
 
     class ConfigDict:

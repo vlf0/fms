@@ -5,7 +5,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: development
     env:
-      KIS_DB_URL: ${{ secrets.KIS_DB_URL }}
+      DB_URL: ${{ secrets.DB_URL }}
       TESTING: 'True'
     steps:
       - name: Get code from repository
@@ -13,7 +13,7 @@ jobs:
       - name: Create .env file
         run: |
           GITHUB_ENV='.env'
-          echo 'KIS_DB_URL'=${{ env.KIS_DB_URL }} >> $GITHUB_ENV
+          echo 'DB_URL'=${{ env.DB_URL }} >> $GITHUB_ENV
       - name: Install dependencies
         run: |
           python3 -m venv venv
