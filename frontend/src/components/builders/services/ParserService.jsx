@@ -6,12 +6,14 @@ const ParserService = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
+  const API_BASE_URL = process.env.REACT_APP_API_HOST;
+
   const handleSubmit = async () => {
     setError('');
     setSuccess('');
-    
+
     try {
-      const response = await fetch("http://159.65.135.38:80/api/v1/run_parser", {
+      const response = await fetch(`${API_BASE_URL}/api/v1/run_parser`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

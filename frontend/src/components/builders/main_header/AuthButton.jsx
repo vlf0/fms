@@ -9,6 +9,8 @@ const AuthButton = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const navigate = useNavigate();
 
+  const API_BASE_URL = process.env.REACT_APP_API_HOST;
+
   useEffect(() => {
     const verifyAuth = async () => {
       const result = await checkAuth();
@@ -21,7 +23,7 @@ const AuthButton = () => {
 
     if (isAuthenticated) {
       try {
-        await fetch("http://159.65.135.38:80/api/v1/logout", {
+        await fetch(`${API_BASE_URL}/api/v1/logout`, {
           method: "POST",
           credentials: "include",
         });

@@ -9,6 +9,8 @@ const RegistrationForm = ({ onSwitchForm }) => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
+  const API_BASE_URL = process.env.REACT_APP_API_HOST;
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -16,7 +18,7 @@ const RegistrationForm = ({ onSwitchForm }) => {
     setSuccess('');
 
     try {
-      const response = await fetch("http://159.65.135.38:80/api/v1/register", {
+      const response = await fetch(`${API_BASE_URL}/api/v1/register`, {
         method: "post",
         headers: {
             "Content-Type": "application/json",

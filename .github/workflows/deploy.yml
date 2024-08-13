@@ -1,0 +1,23 @@
+name: Deploy to production server
+on:
+  push:
+    branches:
+      - main
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+    - name: Remote SSH Commands
+      uses: fifsky/ssh-action@v0.0.6
+      with:
+        host: ${{ secrets.HOST }}
+        user: root
+        key: ${{ secrets.PRIVATE_KEY}}
+        command: |
+          cd ${{ secrets.PROJECT_DIR }}
+          echo 'REACT_APP_API_HOST'=${{ secrets.DOMAIN }} > ${{ secrets.REACT_ENV }}
+          echo 'REACT_APP_DEBUG'=false >> ${{ secrets.REACT_ENV }}
+          git pull origin main
+          cd frontend
+          npm run build

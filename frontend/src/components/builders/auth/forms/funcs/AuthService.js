@@ -1,6 +1,11 @@
+const API_BASE_URL = process.env.REACT_APP_API_HOST;
+
+console.log(API_BASE_URL)
+
 export const loginUser = async (name, password) => {
+
   try {
-    const response = await fetch("http://159.65.135.38:80/api/v1/login", {
+    const response = await fetch(`${API_BASE_URL}/api/v1/login`, {
       method: "POST",
       credentials: "include",
       headers: {
@@ -24,7 +29,7 @@ export const loginUser = async (name, password) => {
 export const checkAuth = async () => {
 
   try {
-    const response = await fetch("http://159.65.135.38:80/api/v1/check_user", {
+    const response = await fetch(`${API_BASE_URL}/api/v1/check_user`, {
       method: "POST",
       credentials: "include",
     });
