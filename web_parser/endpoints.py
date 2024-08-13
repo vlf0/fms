@@ -3,7 +3,7 @@
 """Contains endpoints to users register and login."""
 from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
-# pylint: disable=E0401
+
 from auth import AuthHandler
 from .main import hh_parser
 

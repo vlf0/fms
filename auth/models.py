@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """Description the models of app's database."""
 import os
-# pylint: disable=R0903
+
 from sqlalchemy import (
     Column,
     String
@@ -12,7 +12,7 @@ from sqlalchemy.orm import Mapped, declarative_base, DeclarativeMeta, mapped_col
 Base: DeclarativeMeta = declarative_base()
 
 
-# pylint: disable=E0601
+# pylint: disable=R0903
 class User(Base):
     """Represents a user in the system."""
 
