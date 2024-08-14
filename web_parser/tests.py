@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """Contains tests for `parse` module checking."""
-import pytest
 from typing import AsyncGenerator
-from conftest import TestPlaywrightSetup
+
+import pytest
 from playwright.async_api import BrowserContext, Page, Browser
+
+from conftest import TestPlaywrightSetup
 from .parsers import BaseParser, USER_AGENTS
 from .soups import BaseSoup
 

@@ -3,8 +3,10 @@
 """Contains DB manager interface and its implementations."""
 import os
 from typing import Sequence
+
 from sqlalchemy import create_engine, Connection, Table
 from sqlalchemy.orm import sessionmaker, Session
+
 from auth.models import Base
 from settings import settings
 

@@ -2,8 +2,10 @@
 # -*- coding: utf-8 -*-
 """Contains endpoints to users register and login."""
 from typing import Annotated
+
 from fastapi import APIRouter, Request, Depends
 from fastapi.responses import JSONResponse
+
 from .schemas import UserCreate, UserLogin
 from .services import UserAuthenticate
 

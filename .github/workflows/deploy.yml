@@ -16,8 +16,15 @@ jobs:
         key: ${{ secrets.PRIVATE_KEY}}
         command: |
           cd ${{ secrets.PROJECT_DIR }}
+          
           echo 'REACT_APP_API_HOST'=${{ secrets.DOMAIN }} > ${{ secrets.REACT_ENV }}
           echo 'REACT_APP_DEBUG'=false >> ${{ secrets.REACT_ENV }}
+          
+          echo 'DB_URL'=${{ secrets.DB_URL }} > .env
+          echo 'JWT_SECRET_KEY'=${{ secrets.JWT_SECRET_KEY }} >> .env
+          echo 'REDIS_CACHE'=${{ secrets.REDIS_CACHE }} >> .env
+          echo 'HOST'=${{ secrets.HOST }} >> .env
+          
           git pull origin main
           cd frontend
           npm run build

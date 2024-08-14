@@ -4,7 +4,9 @@
 from typing import Any
 import re
 from abc import ABC, abstractmethod
+
 from bs4 import BeautifulSoup, Tag, NavigableString
+
 from exceptions import TagNotFindError
 
 
@@ -111,7 +113,7 @@ class HHSoup(BaseSoup):
         self.offers_amount: int = 0
         self.offers_links: list[str] | None = None
         self.offers_list: list[Tag] | None = None
-        self.parsed_offers: list[tuple[str, ...]] | None = None
+        self.parsed_offers: list[list[str]] | None = None
         self.descriptions: list[str] | None = None
 
     def parse_content(self, tag: Tag | NavigableString | None) -> None:
@@ -135,7 +137,8 @@ class HHSoup(BaseSoup):
         :raises AttributeError: If an attribute is not found during parsing.
         :raises TypeError: If an unexpected type is encountered during parsing.
         """
-        for offer in self.offers_list:  # type: ignore
+        assert isinstance(self.offers_list, list)
+        for offer in self.offers_list:
             header = offer.find('h2')
             name = header.text  # type: ignore
             link = header.find('a').attrs.get('href')  # type: ignore
@@ -154,14 +157,13 @@ class HHSoup(BaseSoup):
             if company is None:
                 company = offer.find('a', attrs={'data-qa': re.compile('vacancy-serp_')})
             company = company.text.replace('\xa0', ' ')  # type: ignore
-            try:
-                self.parsed_offers.append((name, salary, exp.text, remote.text,  # type: ignore
-                                           company, link))
-            except (AttributeError, TypeError):
-                pass
+            exp = exp.text if exp else exp
+            remote = remote.text if remote else remote
+            self.parsed_offers.append([name, salary, exp, remote,  # type: ignore
+                                       company, link])  # type: ignore
             self.offers_links.append(link)  # type: ignore
 
-    def parse_descriptions(self, extra_content: str) -> None:
+    def parse_descriptions(self, extra_content: str) -> str:
         """
         Parses job descriptions from additional content.
 
@@ -174,7 +176,10 @@ class HHSoup(BaseSoup):
         self.descriptions = []
         text_block = self.get_tag('div', content=extra_content,
                                   attrs={'class': 'vacancy-description'})
-        description_full = text_block.text  # type: ignore
-        description_part = description_full.split('Задайте')[0]
-        single_line_text = ' '.join(description_part.split())
-        self.descriptions.append(single_line_text)
+        try:
+            description_full = text_block.text  # type: ignore
+            description_part = description_full.split('Задайте')[0]
+            single_line_text = ' '.join(description_part.split())
+        except AttributeError:
+            single_line_text = 'Error parsing'
+        return single_line_text

@@ -4,8 +4,11 @@
 Contains parser classes for handling web scraping with Playwright
 and BeautifulSoup.
 """
+import os
 import random
 from abc import ABC, abstractmethod
+import logging
+
 import asyncio
 from playwright.async_api import (
     async_playwright,
@@ -14,7 +17,17 @@ from playwright.async_api import (
     Page,
     TimeoutError as PWTimeoutError
 )
+
 from .soups import HHSoup, BaseSoup
+
+current_dir = os.path.dirname(os.path.abspath(__file__))
+log_file_path = os.path.join(current_dir, 'parser.log')
+logger = logging.getLogger(__name__)
+logging.basicConfig(filename=log_file_path,
+                    encoding='utf-8',
+                    filemode='w',
+                    format='%(asctime)s - %(levelname)s - %(message)s',
+                    level=logging.INFO)
 
 USER_AGENTS = (
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0',
@@ -179,30 +192,43 @@ class HHParser(BaseParser):
         soup_instance.parse_content(tag)
         return soup_instance
 
-    async def parse_many(self) -> HHSoup:
+    async def parse_many(self, start: int, end: int, soup_instance: HHSoup) -> HHSoup:
         """
         Parses content from multiple offer links concurrently.
-        """
-        soup_instance = await self.parse()
 
+        :param start: The starting index of the offers to parse.
+        :param end: The ending index (exclusive) of the offers to parse.
+        :param soup_instance: The HHSoup instance containing the offer links to parse.
+
+        :return: The updated HHSoup instance with parsed offer descriptions.
+        """
+        assert isinstance(soup_instance.offers_links, list)
         async with async_playwright() as pw:
             tasks = []
             browser = await pw.chromium.launch()
             context = await self._create_context(browser)
             async with browser:
-                assert isinstance(soup_instance.offers_links, list)
-                for link in soup_instance.offers_links[:5]:
+                count = start
+                for link in soup_instance.offers_links[start:end]:
                     page = await self._create_page(context)
-                    tasks.append(self._parse_page(page, link))
+                    tasks.append(self._parse_page(page, link, count, soup_instance))
+                    count += 1
                 await asyncio.gather(*tasks)
         return soup_instance
 
-    async def _parse_page(self, page: Page, link: str) -> None:
+    async def _parse_page(self, page: Page, link: str, counter: int, current_soup: HHSoup) -> None:
         """
         Helper method to parse a single page and extract content.
 
         :param page: Page object from Playwright.
         :param link: URL to navigate to.
+        :param counter: The index of the offer being parsed.
+        :param current_soup: The HHSoup instance to update with
+         parsed descriptions.
+
+        :return: None
+        :raises PWTimeoutError: If the page fails to load after maximum
+         retries.
         """
         max_retries = 3
         retries = 0
@@ -212,10 +238,33 @@ class HHParser(BaseParser):
                 await page.wait_for_load_state('load')
                 content = await page.content()
                 soup_instance = self.soup_class(content, self.parser_type)
-                soup_instance.parse_descriptions(content)
+                description = soup_instance.parse_descriptions(content)
+                assert isinstance(current_soup.parsed_offers, list)
+                current_soup.parsed_offers[counter].append(description)
+                await page.close()
                 return
             except PWTimeoutError as e:
                 retries += 1
                 print(f"Attempt {retries} failed: {e}. Retrying...")
                 await asyncio.sleep(2 * retries)
         raise PWTimeoutError("Max retries exceeded while trying to load the page")
+
+    async def run_parsing(self) -> HHSoup:
+        """
+        Runs the full parsing process, including initial parsing
+         of the main page
+        and subsequent concurrent parsing of individual offer pages.
+
+        :return: An instance of HHSoup with all parsed job offers
+         and their descriptions.
+        """
+        soup_instance = await self.parse()
+        assert isinstance(soup_instance.offers_links, list)
+        offers_amount: int = len(soup_instance.offers_links)
+        batch_size: int = 8
+
+        for start in range(0, offers_amount, batch_size):
+            end = min(start + batch_size, offers_amount)
+            await self.parse_many(start=start, end=end, soup_instance=soup_instance)
+
+        return soup_instance
