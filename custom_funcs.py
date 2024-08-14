@@ -91,9 +91,10 @@ class ConfigFilesSorter:
         content = await self.get_file_content()
         removed_literals = content.replace('\n', ' ')
         dependencies_list = removed_literals.split(' ')
-        extensions = [f'{dependence.lower()}\n' for dependence in dependencies_list]
+        extensions = [dependence.lower() for dependence in dependencies_list]
         extensions.sort()
-        sorted_dependencies = ''.join(extensions)
+        sorted_dependencies = '\n'.join(extensions)
+
         await self.__rewrite_requirements_file(sorted_dependencies)
 
     async def __rewrite_requirements_file(self, content: str) -> None:

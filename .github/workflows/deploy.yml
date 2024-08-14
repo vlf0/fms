@@ -16,7 +16,7 @@ jobs:
         key: ${{ secrets.PRIVATE_KEY}}
         command: |
           cd ${{ secrets.PROJECT_DIR }}
-          pwd
+
           echo 'REACT_APP_API_HOST'=${{ secrets.DOMAIN }} > ${{ secrets.REACT_ENV }}
           echo 'REACT_APP_DEBUG'=false >> ${{ secrets.REACT_ENV }}
           
@@ -24,8 +24,11 @@ jobs:
           echo 'JWT_SECRET_KEY'=${{ secrets.JWT_SECRET_KEY }} >> .env
           echo 'REDIS_CACHE'=${{ secrets.REDIS_CACHE }} >> .env
           echo 'HOST'=${{ secrets.HOST }} >> .env
-          cat .env
+
           git pull origin main
-          echo 'success pulling'
+          
+          chmod 772 update_dependencies.sh
+          ./update_dependencies.sh
+          
           cd frontend
           npm run build
