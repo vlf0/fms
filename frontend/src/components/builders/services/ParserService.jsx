@@ -26,6 +26,9 @@ const ParserService = () => {
         throw new Error(errorData.detail || "Parser operation failed");
       }
 
+      const resultData = await response.json();
+      console.log("Result:", resultData);
+
       setSuccess("Parser operation successful!");
     
     } catch (error) {

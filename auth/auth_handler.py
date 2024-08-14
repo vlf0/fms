@@ -16,7 +16,7 @@ from settings import settings
 
 SECRET_KEY = settings.jwt_secret_key
 ALGORITHM = 'HS256'
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+ACCESS_TOKEN_EXPIRE_MINUTES = 60
 
 
 class AuthHandler:
@@ -143,7 +143,7 @@ class AuthHandler:
                                 value='revoked',
                                 expires='01.01.1970',
                                 httponly=True,
-                                domain='159.65.135.38')
+                                domain=settings.host)
         else:
             response = JSONResponse(content={'detail': 'User is not authorized, nothing logout.'},
                                     status_code=status.HTTP_204_NO_CONTENT)

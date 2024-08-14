@@ -6,10 +6,12 @@ from datetime import timedelta
 from fastapi import Request, HTTPException, status
 from fastapi.responses import JSONResponse
 
+from settings import settings
 from db_utils import session_manager
 from .schemas import UserCreate, UserLogin
 from .models import User
 from .auth_handler import AuthHandler, ACCESS_TOKEN_EXPIRE_MINUTES
+
 
 
 class UserAuthenticate:
@@ -89,7 +91,7 @@ class UserAuthenticate:
                                 value=access_token,
                                 expires=259200,
                                 httponly=True,
-                                domain='159.65.135.38',
+                                domain=settings.host,
                                 )
             return response
 

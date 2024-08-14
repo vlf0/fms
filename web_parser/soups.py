@@ -157,11 +157,10 @@ class HHSoup(BaseSoup):
             if company is None:
                 company = offer.find('a', attrs={'data-qa': re.compile('vacancy-serp_')})
             company = company.text.replace('\xa0', ' ')  # type: ignore
-            try:
-                self.parsed_offers.append([name, salary, exp.text, remote.text,  # type: ignore
-                                           company, link])  # type: ignore
-            except (AttributeError, TypeError):
-                pass
+            exp = exp.text if exp else exp
+            remote = remote.text if remote else remote
+            self.parsed_offers.append([name, salary, exp, remote,  # type: ignore
+                                       company, link])  # type: ignore
             self.offers_links.append(link)  # type: ignore
 
     def parse_descriptions(self, extra_content: str) -> str:
@@ -177,7 +176,10 @@ class HHSoup(BaseSoup):
         self.descriptions = []
         text_block = self.get_tag('div', content=extra_content,
                                   attrs={'class': 'vacancy-description'})
-        description_full = text_block.text  # type: ignore
-        description_part = description_full.split('Задайте')[0]
-        single_line_text = ' '.join(description_part.split())
+        try:
+            description_full = text_block.text  # type: ignore
+            description_part = description_full.split('Задайте')[0]
+            single_line_text = ' '.join(description_part.split())
+        except AttributeError:
+            single_line_text = 'Error parsing'
         return single_line_text

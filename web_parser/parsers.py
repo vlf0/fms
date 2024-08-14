@@ -4,8 +4,10 @@
 Contains parser classes for handling web scraping with Playwright
 and BeautifulSoup.
 """
+import os
 import random
 from abc import ABC, abstractmethod
+import logging
 
 import asyncio
 from playwright.async_api import (
@@ -17,6 +19,15 @@ from playwright.async_api import (
 )
 
 from .soups import HHSoup, BaseSoup
+
+current_dir = os.path.dirname(os.path.abspath(__file__))
+log_file_path = os.path.join(current_dir, 'parser.log')
+logger = logging.getLogger(__name__)
+logging.basicConfig(filename=log_file_path,
+                    encoding='utf-8',
+                    filemode='w',
+                    format='%(asctime)s - %(levelname)s - %(message)s',
+                    level=logging.INFO)
 
 USER_AGENTS = (
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0',
@@ -191,12 +202,12 @@ class HHParser(BaseParser):
 
         :return: The updated HHSoup instance with parsed offer descriptions.
         """
+        assert isinstance(soup_instance.offers_links, list)
         async with async_playwright() as pw:
             tasks = []
             browser = await pw.chromium.launch()
             context = await self._create_context(browser)
             async with browser:
-                assert isinstance(soup_instance.offers_links, list)
                 count = start
                 for link in soup_instance.offers_links[start:end]:
                     page = await self._create_page(context)

@@ -11,6 +11,8 @@ class Settings(BaseSettings):
 
     db_url: str = 'default'
     jwt_secret_key: str = 'default'
+    redis_cache: str = 'default'
+    host: str = 'default'
 
     class ConfigDict:
         """Represent rows of variables from .env file."""

@@ -9,15 +9,16 @@ jobs:
     runs-on: ubuntu-latest
     environment: development
     env:
-      DB_URL: ${{ secrets.DB_URL }}
       TESTING: 'True'
     steps:
       - name: Get code from repository
         uses: actions/checkout@v4
       - name: Create .env file
         run: |
-          GITHUB_ENV='.env'
-          echo 'DB_URL'=${{ env.DB_URL }} >> $GITHUB_ENV
+          echo 'DB_URL'=${{ secrets.DB_URL }} > .env
+          echo 'JWT_SECRET_KEY'=${{ secrets.JWT_SECRET_KEY }} >> .env
+          echo 'REDIS_CACHE'=${{ secrets.REDIS_CACHE }} >> .env
+          echo 'HOST'=${{ secrets.HOST }} >> .env
       - name: Install dependencies
         run: |
           python3 -m venv venv
