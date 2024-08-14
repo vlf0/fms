@@ -12,11 +12,11 @@ jobs:
       uses: fifsky/ssh-action@v0.0.6
       with:
         host: ${{ secrets.HOST }}
-        user: root
+        user: vlf
         key: ${{ secrets.PRIVATE_KEY}}
         command: |
           cd ${{ secrets.PROJECT_DIR }}
-          
+          pwd
           echo 'REACT_APP_API_HOST'=${{ secrets.DOMAIN }} > ${{ secrets.REACT_ENV }}
           echo 'REACT_APP_DEBUG'=false >> ${{ secrets.REACT_ENV }}
           
@@ -24,7 +24,8 @@ jobs:
           echo 'JWT_SECRET_KEY'=${{ secrets.JWT_SECRET_KEY }} >> .env
           echo 'REDIS_CACHE'=${{ secrets.REDIS_CACHE }} >> .env
           echo 'HOST'=${{ secrets.HOST }} >> .env
-          
+          cat .env
           git pull origin main
+          echo 'success pulling'
           cd frontend
           npm run build
