@@ -10,5 +10,5 @@ async def hh_parser() -> HHSoup:
     soup instance.
     """
     parser: HHParser = HHParser(HH_URL, HHSoup)
-    soup_instance: HHSoup = await parser.run_parsing()
+    soup_instance: HHSoup = await parser.parse()
     return soup_instance
