@@ -121,7 +121,7 @@ class BaseParser(AbstractParser):
         :raises TimeoutError: If the page fails to load
          maximum retries.
         """
-        max_retries = 3
+        max_retries = 10
         retries = 0
         async with async_playwright() as pw:
             browser = await pw.chromium.launch()
@@ -230,7 +230,7 @@ class HHParser(BaseParser):
         :raises PWTimeoutError: If the page fails to load after maximum
          retries.
         """
-        max_retries = 3
+        max_retries = 10
         retries = 0
         while retries < max_retries:
             try:
