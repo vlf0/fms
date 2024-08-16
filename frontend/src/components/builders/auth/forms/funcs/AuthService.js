@@ -1,7 +1,5 @@
 const API_BASE_URL = process.env.REACT_APP_API_HOST;
 
-console.log(API_BASE_URL)
-
 export const loginUser = async (name, password) => {
 
   try {

@@ -13,6 +13,8 @@ class Settings(BaseSettings):
     jwt_secret_key: str = 'default'
     redis_cache: str = 'default'
     host: str = 'default'
+    celery_broker: str = 'default'
+    celery_backend: str = 'default'
 
     class ConfigDict:
         """Represent rows of variables from .env file."""

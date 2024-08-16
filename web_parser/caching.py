@@ -6,8 +6,8 @@ import json
 from fastapi import status
 from fastapi.responses import JSONResponse
 
+from celery_app import run_parser_task
 from redis_client import redis
-from .main import hh_parser
 
 
 # pylint: disable=R0903
@@ -15,39 +15,42 @@ class CacheManager:
     """
     Manages caching of parsed offers using Redis.
 
-    Provides methods to retrieve cached data from Redis or create new
-    cache entries if they do not already exist.
+    This class provides methods to retrieve cached data from Redis or
+    to create new cache entries if they do not already exist.
     """
 
     def __init__(self) -> None:
         """
         Initializes the CacheManager with a Redis client.
 
-        Imports the Redis client from the `main` module.
+        :return: None
         """
         self.client = redis
 
-    async def get_or_create(self) -> JSONResponse:
+    async def get_or_create(self) -> dict[str, str]:
         """
-        Retrieves cached parsed offers from Redis or creates a new cache
-        entry.
+        Retrieves cached data or initiates a Celery task to create it.
 
-        Checks if the cached parsed offers exist in Redis. If so, it
-        decodes the cached bytes, converts them to JSON, and returns
-        them in a JSONResponse. If the cache does not exist, it parses
-        new data, encodes it, stores it in Redis, and returns it in a
-        JSONResponse.
-
-        :return: JSONResponse: A JSON response containing the parsed
-         offers, either from the cache or newly created.
-        :raises Exception: If there is an error in parsing or
-         encoding/decoding the data.
+        :return: Cached data as a string if it exists, otherwise
+         a dictionary indicating the task has been launched.
         """
         if b_cache := await self.client.get('parsed_offers'):
-            cache = json.loads(b_cache.decode())
-            return JSONResponse(content=cache, status_code=status.HTTP_200_OK)
-        soup_instance = await hh_parser()
-        cache = soup_instance.parsed_offers
-        b_cache = json.dumps(cache).encode()
-        await self.client.set('parsed_offers', b_cache)
-        return JSONResponse(content=cache, status_code=status.HTTP_201_CREATED)
+            cache: str = json.loads(b_cache.decode())
+            return {'parsed_data': cache}
+        run_parser_task.delay()
+        return {'parsed_data': 'in process'}
+
+    async def response_result(self) -> JSONResponse:
+        """
+        Returns a JSON response with either cached data or task status.
+
+        :return: A JSON response with a 304 Not Modified status if the
+         cached data is available, or a 200 OK status with task
+         information if the data is being generated.
+        """
+        content = await self.get_or_create()
+        if isinstance(content, str):
+            code = status.HTTP_304_NOT_MODIFIED
+        else:
+            code = status.HTTP_200_OK
+        return JSONResponse(content=content, status_code=code)

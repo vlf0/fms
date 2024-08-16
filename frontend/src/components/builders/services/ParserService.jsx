@@ -29,7 +29,7 @@ const ParserService = () => {
       const resultData = await response.json();
       console.log("Result:", resultData);
 
-      setSuccess("Parser operation successful!");
+      setSuccess("Parser is launched successfully and has status: " + resultData.status);
     
     } catch (error) {
       setError("You are not authorized! [" + error.message + "]");
